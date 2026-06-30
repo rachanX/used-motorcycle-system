@@ -77,4 +77,5 @@ export async function logoutAction(locale: string) {
   const supabase = await createClient();
   await (supabase.rpc as any)('log_auth_event', { p_action: 'logout' });
   await supabase.auth.signOut();
-  redir
+  redirect(`/${locale}/login`);
+}
