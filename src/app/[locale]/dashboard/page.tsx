@@ -106,10 +106,6 @@ export default async function DashboardPage({
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  const displayName = user?.full_name ?? user?.username ?? '';
-  const greetWord   = isThai ? 'สวัสดี' : 'Hello';
-  const greeting    = displayName ? `${greetWord}, ${displayName}` : greetWord;
-
   const labelAvailable    = isThai ? 'คันพร้อมขาย' : 'available';
   const labelClosed       = isThai ? 'สัญญาปิดแล้ว' : 'closed';
   const labelReceivable   = isThai ? 'ยอดคงเหลือรวม' : 'Total receivable';
@@ -161,9 +157,6 @@ export default async function DashboardPage({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <p className="text-sm text-slate-400 dark:text-slate-500 mb-0.5">{dateStr}</p>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-            {greeting} 👋
-          </h1>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {quickActions.map((a) => (
