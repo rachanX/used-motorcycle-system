@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
@@ -18,7 +19,7 @@ export default async function NewContractPage({
   let customerQuery = supabase.from('customers').select('id, first_name, last_name, phone_number, address, guarantor_name, guarantor_phone').is('deleted_at', null).order('first_name');
   let vehicleQuery = supabase.from('vehicles').select('id, stock_code, brand, model, engine_number, vin_number, license_plate, color, actual_cost').eq('status', 'available').is('deleted_at', null).order('stock_code');
 
-  if (me?.role !== 'developer' && me?.branch_id) {
+  if (!isPowerUser(me?.role) && me?.branch_id) {
     vehicleQuery = vehicleQuery.eq('branch_id', me.branch_id);
     customerQuery = customerQuery.eq('branch_id', me.branch_id);
   }
@@ -46,7 +47,7 @@ export default async function NewContractPage({
         branches={branches ?? []}
         customers={(customers ?? []) as any}
         vehicles={(vehicles ?? []) as any}
-        defaultBranchId={me?.role === 'developer' ? null : me?.branch_id ?? null}
+        defaultBranchId={isPowerUser(me?.role) ? null : me?.branch_id ?? null}
       />
     </div>
   );

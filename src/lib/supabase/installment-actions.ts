@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { adminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -8,7 +9,7 @@ import { z } from 'zod';
 async function assertBranchAccess(branchId: string) {
   const me = await getCurrentAppUser();
   if (!me) throw new Error('Forbidden');
-  if (me.role !== 'developer' && branchId !== me.branch_id) throw new Error('Forbidden');
+  if (!isPowerUser(me.role) && branchId !== me.branch_id) throw new Error('Forbidden');
   return me;
 }
 
@@ -31,7 +32,7 @@ export async function createInstallmentContractAction(
 
   const branchId = formData.get('branch_id') as string;
   if (!branchId) return { error: 'invalid' };
-  if (me.role !== 'developer' && branchId !== me.branch_id) return { error: 'forbidden' };
+  if (!isPowerUser(me.role) && branchId !== me.branch_id) return { error: 'forbidden' };
 
   const supabase = await createClient();
   const admin = adminClient();
@@ -233,7 +234,7 @@ export async function addPaymentRowAction(
 ): Promise<PaymentRowState> {
   const me = await getCurrentAppUser();
   if (!me) return { error: 'forbidden' };
-  if (me.role !== 'developer' && contractBranchId !== me.branch_id) return { error: 'forbidden' };
+  if (!isPowerUser(me.role) && contractBranchId !== me.branch_id) return { error: 'forbidden' };
 
   const contractId = formData.get('contract_id') as string;
   const { error } = await adminClient().from('payments').insert({
@@ -271,7 +272,7 @@ export async function generatePaymentScheduleAction(
     .single();
 
   if (!contract) return { error: 'not_found' };
-  if (me.role !== 'developer' && contract.branch_id !== me.branch_id) return { error: 'forbidden' };
+  if (!isPowerUser(me.role) && contract.branch_id !== me.branch_id) return { error: 'forbidden' };
   if (!contract.total_terms || !contract.monthly_installment) return { error: 'missing_terms' };
 
   // Delete existing UNPAID (pending/overdue) payments only — never delete paid ones
@@ -334,7 +335,7 @@ export async function recordInstallmentPaymentAction(
 ): Promise<PaymentRowState> {
   const me = await getCurrentAppUser();
   if (!me) return { error: 'forbidden' };
-  if (me.role !== 'developer' && contractBranchId !== me.branch_id) return { error: 'forbidden' };
+  if (!isPowerUser(me.role) && contractBranchId !== me.branch_id) return { error: 'forbidden' };
 
   const amount_paid = Number(formData.get('amount_paid') ?? 0);
   const amount_due = Number(formData.get('amount_due') ?? 0);

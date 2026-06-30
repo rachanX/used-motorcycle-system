@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import SoldPageClient from './sold-client';
 
@@ -20,7 +21,7 @@ export default async function SoldVehiclesPage({
     .select('*')
     .order('stock_code', { ascending: false });
 
-  if (me?.role !== 'developer' && me?.branch_id) {
+  if (!isPowerUser(me?.role) && me?.branch_id) {
     query = query.eq('branch_id', me.branch_id);
   }
 
@@ -48,7 +49,7 @@ export default async function SoldVehiclesPage({
         closedContracts={closedContracts as any}
         currentTab={sp.tab ?? 'cash'}
         currentQuery={sp.q ?? ''}
-        isDeveloper={me?.role === 'developer'}
+        isDeveloper={isPowerUser(me?.role)}
       />
     </div>
   );

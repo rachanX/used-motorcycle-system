@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { adminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -52,7 +53,7 @@ export async function createCustomerAction(
   const parsed = parseForm(formData);
   if (!parsed.success) return { error: 'invalid' };
 
-  if (me.role !== 'developer' && parsed.data.branch_id !== me.branch_id) {
+  if (!isPowerUser(me.role) && parsed.data.branch_id !== me.branch_id) {
     return { error: 'forbidden' };
   }
 
@@ -66,7 +67,7 @@ export async function createCustomerAction(
 
 export async function softDeleteCustomerAction(locale: string, customerId: string) {
   const me = await getCurrentAppUser();
-  if (!me || me.role !== 'developer') throw new Error('Forbidden');
+  if (!me || !isPowerUser(me.role)) throw new Error('Forbidden');
 
   const supabase = await createClient();
   const { count } = await supabase
@@ -97,7 +98,7 @@ export async function updateCustomerAction(
   const parsed = parseForm(formData);
   if (!parsed.success) return { error: 'invalid' };
 
-  if (me.role !== 'developer' && parsed.data.branch_id !== me.branch_id) {
+  if (!isPowerUser(me.role) && parsed.data.branch_id !== me.branch_id) {
     return { error: 'forbidden' };
   }
 

@@ -1,13 +1,14 @@
 'use server';
 
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { adminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 async function assertDeveloper() {
   const me = await getCurrentAppUser();
-  if (!me || me.role !== 'developer') {
+  if (!me || !isPowerUser(me.role)) {
     throw new Error('Forbidden: developer role required to manage branches');
   }
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { isPowerUser } from '@/lib/auth/roles';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
@@ -40,7 +41,7 @@ export default async function ContractDetailPage({
         locale={locale}
         contract={contract as any}
         summary={summaryRows?.[0] ?? null}
-        isDeveloper={me?.role === 'developer'}
+        isDeveloper={isPowerUser(me?.role)}
       />
     </div>
   );

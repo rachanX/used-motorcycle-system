@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import CustomerTable from './customer-table';
 
@@ -53,8 +54,8 @@ export default async function CustomersPage({
         locale={locale}
         customers={customers ?? []}
         branches={branches ?? []}
-        defaultBranchId={me?.role === 'developer' ? null : me?.branch_id ?? null}
-        isDeveloper={me?.role === 'developer'}
+        defaultBranchId={isPowerUser(me?.role) ? null : me?.branch_id ?? null}
+        isDeveloper={isPowerUser(me?.role)}
         page={page}
         totalPages={totalPages}
         currentQuery={sp.q ?? ''}

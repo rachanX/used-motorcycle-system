@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import BranchTable from './branch-table';
 
@@ -45,7 +46,7 @@ export default async function BranchesPage({
       <BranchTable
         locale={locale}
         branches={(branches ?? []) as any}
-        isDeveloper={me?.role === 'developer'}
+        isDeveloper={isPowerUser(me?.role)}
         currentQuery={q ?? ''}
         currentStatus={status ?? ''}
       />

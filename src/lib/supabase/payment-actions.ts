@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { adminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
@@ -15,7 +16,7 @@ export async function recordPaymentAction(
 ): Promise<PaymentFormState> {
   const me = await getCurrentAppUser();
   if (!me) return { error: 'forbidden' };
-  if (me.role !== 'developer' && branchId !== me.branch_id) return { error: 'forbidden' };
+  if (!isPowerUser(me.role) && branchId !== me.branch_id) return { error: 'forbidden' };
 
   const amount_paid = Number(formData.get('amount_paid') ?? 0);
   const amount_due = Number(formData.get('amount_due') ?? 0);

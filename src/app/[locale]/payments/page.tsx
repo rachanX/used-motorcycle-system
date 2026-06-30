@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import ContractSummaryTable from './contract-summary-table';
 
@@ -29,7 +30,7 @@ export default async function PaymentsPage({
     .order('contract_number', { ascending: false })
     .range(from, to);
 
-  if (me?.role !== 'developer' && me?.branch_id) {
+  if (!isPowerUser(me?.role) && me?.branch_id) {
     query = query.eq('branch_id', me.branch_id);
   }
   if (sp.status) query = query.eq('contract_status', sp.status as import('@/types/database.types').ContractStatus);
@@ -55,7 +56,7 @@ export default async function PaymentsPage({
       <ContractSummaryTable
         locale={locale}
         contracts={(contracts ?? []) as any}
-        isDeveloper={me?.role === 'developer'}
+        isDeveloper={isPowerUser(me?.role)}
         page={page}
         totalPages={totalPages}
         currentQuery={sp.q ?? ''}

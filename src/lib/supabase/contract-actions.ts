@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { adminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -51,7 +52,7 @@ export async function createContractAction(
   if (!parsed.success) return { error: 'invalid' };
 
   const d = parsed.data;
-  if (me.role !== 'developer' && d.branch_id !== me.branch_id) {
+  if (!isPowerUser(me.role) && d.branch_id !== me.branch_id) {
     return { error: 'forbidden' };
   }
   if (d.down_payment > d.sale_price) return { error: 'invalid' };
@@ -144,7 +145,7 @@ export async function updateContractAction(
     .eq('id', contractId)
     .single();
   if (!contract) return { error: 'invalid' };
-  if (me.role !== 'developer' && contract.branch_id !== me.branch_id) {
+  if (!isPowerUser(me.role) && contract.branch_id !== me.branch_id) {
     return { error: 'forbidden' };
   }
 
@@ -177,7 +178,7 @@ export async function updateContractAction(
 
 export async function softDeleteContractAction(locale: string, contractId: string) {
   const me = await getCurrentAppUser();
-  if (!me || me.role !== 'developer') throw new Error('Forbidden');
+  if (!me || !isPowerUser(me.role)) throw new Error('Forbidden');
 
   const admin = adminClient();
   const { data: contract } = await admin
@@ -217,7 +218,7 @@ export async function cancelContractAction(locale: string, contractId: string) {
     .eq('id', contractId)
     .single();
   if (!contract) throw new Error('Not found');
-  if (me.role !== 'developer' && contract.branch_id !== me.branch_id) {
+  if (!isPowerUser(me.role) && contract.branch_id !== me.branch_id) {
     throw new Error('Forbidden');
   }
 

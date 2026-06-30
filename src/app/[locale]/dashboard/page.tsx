@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { isPowerUser } from '@/lib/auth/roles';
 import { getTranslations } from 'next-intl/server';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import { adminClient } from '@/lib/supabase/admin';
@@ -20,7 +21,7 @@ export default async function DashboardPage({
   const admin = adminClient();
 
   let summaryQuery = supabase.from('v_dashboard_summary').select('*');
-  if (user?.role !== 'developer' && user?.branch_id) {
+  if (!isPowerUser(user?.role) && user?.branch_id) {
     summaryQuery = summaryQuery.eq('branch_id', user.branch_id);
   }
 
@@ -29,7 +30,7 @@ export default async function DashboardPage({
     .select('*')
     .order('days_overdue', { ascending: false })
     .limit(6);
-  if (user?.role !== 'developer' && user?.branch_id) {
+  if (!isPowerUser(user?.role) && user?.branch_id) {
     overdueQuery = overdueQuery.eq('branch_id', user.branch_id);
   }
 
@@ -55,7 +56,7 @@ export default async function DashboardPage({
     .gte('due_date', today)
     .lte('due_date', in7);
 
-  if (user?.role !== 'developer' && user?.branch_id) {
+  if (!isPowerUser(user?.role) && user?.branch_id) {
     // filter by branch via contracts join not possible here directly;
     // we fetch all and the RLS-based supabase client handles it if needed
   }

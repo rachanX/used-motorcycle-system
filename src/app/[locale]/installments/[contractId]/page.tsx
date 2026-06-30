@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { isPowerUser } from '@/lib/auth/roles';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
@@ -23,7 +24,7 @@ export default async function InstallmentDetailPage({
     .single();
 
   if (!contract) notFound();
-  if (me?.role !== 'developer' && contract.branch_id !== me?.branch_id) notFound();
+  if (!isPowerUser(me?.role) && contract.branch_id !== me?.branch_id) notFound();
 
   const { data: branches } = await supabase
     .from('branches')

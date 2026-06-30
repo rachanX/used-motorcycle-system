@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import Link from 'next/link';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import { Pencil, Trash2, Eye } from 'lucide-react';
@@ -45,7 +46,7 @@ export default async function VehicleListPage({
     .order('stock_code', { ascending: true })
     .range(from, to);
 
-  if (me?.role !== 'developer' && me?.branch_id) {
+  if (!isPowerUser(me?.role) && me?.branch_id) {
     query = query.eq('branch_id', me.branch_id);
   }
 

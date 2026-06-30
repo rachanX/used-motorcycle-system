@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { isPowerUser } from '@/lib/auth/roles';
 import { getTranslations } from 'next-intl/server';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import type { VehicleStatus } from '@/types/database.types';
@@ -61,7 +62,7 @@ export default async function VehiclePrefixPage({
   // Staff: show their branch's vehicles PLUS unassigned (null branch) ones.
   // Null-branch vehicles are always under_repair (available/reserved always have a branch),
   // so this is safe and avoids unsupported nested PostgREST and() syntax.
-  if (me?.role !== 'developer' && me?.branch_id)
+  if (!isPowerUser(me?.role) && me?.branch_id)
     query = query.or(`branch_id.eq.${me.branch_id},branch_id.is.null`);
   if (sp.branch) query = query.eq('branch_id', sp.branch);
   if (sp.q) {
@@ -93,8 +94,8 @@ export default async function VehiclePrefixPage({
         branches={branches ?? []}
         suppliers={[]}
         prefixes={(allPrefixes ?? []) as any}
-        defaultBranchId={me?.role === 'developer' ? null : me?.branch_id ?? null}
-        isDeveloper={me?.role === 'developer'}
+        defaultBranchId={isPowerUser(me?.role) ? null : me?.branch_id ?? null}
+        isDeveloper={isPowerUser(me?.role)}
         totalCount={count ?? 0}
         page={page}
         totalPages={totalPages}

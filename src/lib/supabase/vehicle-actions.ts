@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { adminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -79,7 +80,7 @@ export async function createVehicleAction(
 
   // under_repair vehicles may have null branch_id — branch assigned later when available
   if (d.status !== 'under_repair' && !d.branch_id) return { error: 'branchRequired' };
-  if (me.role !== 'developer' && d.branch_id && d.branch_id !== me.branch_id) {
+  if (!isPowerUser(me.role) && d.branch_id && d.branch_id !== me.branch_id) {
     return { error: 'forbidden' };
   }
   // sold_cash requires a selling price
@@ -136,7 +137,7 @@ export async function updateVehicleAction(
   if (!parsed.success) return { error: 'priceInvalid' };
   const d = parsed.data;
 
-  if (me.role !== 'developer' && d.branch_id && d.branch_id !== me.branch_id) {
+  if (!isPowerUser(me.role) && d.branch_id && d.branch_id !== me.branch_id) {
     return { error: 'forbidden' };
   }
   // under_repair vehicles may have null branch_id
@@ -179,7 +180,7 @@ export async function updateVehicleAction(
 export async function softDeleteVehicleAction(locale: string, vehicleId: string) {
   const me = await getCurrentAppUser();
   if (!me) throw new Error('Forbidden');
-  if (me.role !== 'developer') throw new Error('Forbidden');
+  if (!isPowerUser(me.role)) throw new Error('Forbidden');
 
   // Use adminClient to read so RLS doesn't block sold/cash vehicles
   const admin = adminClient();

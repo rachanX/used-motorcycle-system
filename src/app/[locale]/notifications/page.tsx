@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import { adminClient } from '@/lib/supabase/admin';
 import NotificationList from './notification-list';
@@ -32,7 +33,7 @@ export default async function NotificationsPage({
     .order('created_at', { ascending: false })
     .limit(100);
 
-  if (me?.role !== 'developer' && me?.branch_id) {
+  if (!isPowerUser(me?.role) && me?.branch_id) {
     query = query.eq('branch_id', me.branch_id);
   }
   if (sp.type) query = query.eq('type', sp.type as import('@/types/database.types').NotificationType);

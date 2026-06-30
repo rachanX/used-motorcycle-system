@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { adminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
@@ -15,7 +16,7 @@ export async function markNotificationReadAction(locale: string, notificationId:
     .eq('id', notificationId)
     .single();
   if (!notif) throw new Error('Not found');
-  if (me.role !== 'developer' && notif.branch_id !== me.branch_id) throw new Error('Forbidden');
+  if (!isPowerUser(me.role) && notif.branch_id !== me.branch_id) throw new Error('Forbidden');
 
   const { error } = await adminClient()
     .from('notifications')
@@ -38,7 +39,7 @@ export async function softDeleteNotificationAction(locale: string, notificationI
     .eq('id', notificationId)
     .single();
   if (!notif) throw new Error('Not found');
-  if (me.role !== 'developer' && notif.branch_id !== me.branch_id) throw new Error('Forbidden');
+  if (!isPowerUser(me.role) && notif.branch_id !== me.branch_id) throw new Error('Forbidden');
 
   const { error } = await adminClient()
     .from('notifications')
@@ -55,7 +56,7 @@ export async function markAllNotificationsReadAction(locale: string) {
   if (!me) throw new Error('Forbidden');
 
   let query = adminClient().from('notifications').update({ is_read: true }).eq('is_read', false);
-  if (me.role !== 'developer' && me.branch_id) {
+  if (!isPowerUser(me.role) && me.branch_id) {
     query = query.eq('branch_id', me.branch_id);
   }
   const { error } = await query;

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { isPowerUser } from '@/lib/auth/roles';
 import { getTranslations } from 'next-intl/server';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import InstallmentTableClient from './installment-table-client';
@@ -28,7 +29,7 @@ export default async function InstallmentsPage({
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
-  if (me?.role !== 'developer' && me?.branch_id) {
+  if (!isPowerUser(me?.role) && me?.branch_id) {
     query = query.eq('branch_id', me.branch_id);
   }
 
@@ -46,7 +47,7 @@ export default async function InstallmentsPage({
     );
   });
 
-  const isDeveloper = me?.role === 'developer';
+  const isDeveloper = isPowerUser(me?.role);
 
   return (
     <div>

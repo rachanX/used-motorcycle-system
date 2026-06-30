@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { isPowerUser } from '@/lib/auth/roles';
 import { getTranslations } from 'next-intl/server';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import { ArrowLeft } from 'lucide-react';
@@ -17,7 +18,7 @@ export default async function NewContractPage({
   const me = await getCurrentAppUser();
   const supabase = await createClient();
 
-  const branchFilter = me?.role === 'developer' ? null : me?.branch_id;
+  const branchFilter = isPowerUser(me?.role) ? null : me?.branch_id;
 
   let customerQuery = supabase
     .from('customers')

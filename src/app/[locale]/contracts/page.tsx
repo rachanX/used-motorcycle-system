@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { isPowerUser } from '@/lib/auth/roles';
 import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import ContractTable from './contract-table';
 
@@ -52,7 +53,7 @@ export default async function ContractsPage({
       <ContractTable
         locale={locale}
         contracts={(contracts ?? []) as any}
-        isDeveloper={me?.role === 'developer'}
+        isDeveloper={isPowerUser(me?.role)}
         page={page}
         totalPages={totalPages}
         currentQuery={sp.q ?? ''}
