@@ -1,0 +1,47 @@
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { ArrowLeft } from 'lucide-react';
+import ContractDetailClient from './detail-client';
+
+export default async function ContractDetailPage({
+  params
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}) {
+  const { locale, id } = await params;
+  const t = await getTranslations('contracts');
+  const me = await getCurrentAppUser();
+  const supabase = await createClient();
+
+  const [{ data: contract }, { data: summaryRows }] = await Promise.all([
+    supabase
+      .from('contracts')
+      .select('*, customers(first_name, last_name, phone_number), vehicles(brand, model, stock_code, license_plate), payments(*)')
+      .eq('id', id)
+      .single(),
+    supabase.rpc('get_contract_summary', { p_contract_id: id })
+  ]);
+
+  if (!contract) notFound();
+
+  return (
+    <div>
+      <Link
+        href={`/${locale}/contracts`}
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 mb-4"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        {t('title')}
+      </Link>
+
+      <ContractDetailClient
+        locale={locale}
+        contract={contract as any}
+        summary={summaryRows?.[0] ?? null}
+        isDeveloper={me?.role === 'developer'}
+      />
+    </div>
+  );
+}

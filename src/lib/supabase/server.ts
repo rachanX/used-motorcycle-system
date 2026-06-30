@@ -1,0 +1,46 @@
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import type { Database, AppUser } from '@/types/database.types';
+
+export async function createClient() {
+  const cookieStore = await cookies();
+
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet: Array<{ name: string; value: string; options: CookieOptions }>) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch (_e) {
+            // setAll called from a Server Component (no-op; middleware
+            // refreshes the session instead). Safe to ignore.
+          }
+        }
+      }
+    }
+  );
+}
+
+/** Returns the signed-in user's app profile (role, branch, etc.), or null. */
+export async function getCurrentAppUser(): Promise<AppUser | null> {
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  return profile as AppUser | null;
+}

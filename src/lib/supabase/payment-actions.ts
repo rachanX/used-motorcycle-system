@@ -1,0 +1,52 @@
+'use server';
+
+import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { adminClient } from '@/lib/supabase/admin';
+import { revalidatePath } from 'next/cache';
+
+export interface PaymentFormState { error?: string; }
+
+export async function recordPaymentAction(
+  locale: string,
+  paymentId: string,
+  branchId: string,
+  _prevState: PaymentFormState,
+  formData: FormData
+): Promise<PaymentFormState> {
+  const me = await getCurrentAppUser();
+  if (!me) return { error: 'forbidden' };
+  if (me.role !== 'developer' && branchId !== me.branch_id) return { error: 'forbidden' };
+
+  const amount_paid = Number(formData.get('amount_paid') ?? 0);
+  const amount_due = Number(formData.get('amount_due') ?? 0);
+  const payment_date = formData.get('payment_date') as string || null;
+  const payment_method = (formData.get('payment_method') as string || null) as import('@/types/database.types').PaymentMethod | null;
+  const notes = formData.get('notes') as string || null;
+  const penalty_fee = Number(formData.get('penalty_fee') || 0);
+  const receipt_number = formData.get('receipt_number') as string || null;
+  const bank_raw = formData.get('bank') as string || null;
+  const custom_bank_name = formData.get('custom_bank_name') as string || null;
+  const bank = bank_raw === 'others' ? 'others' : bank_raw;
+
+  const status = amount_paid >= amount_due && amount_due > 0 ? 'paid' : 'pending';
+
+  const { error } = await adminClient().from('payments').update({
+    amount_paid,
+    payment_date,
+    actual_payment_date: payment_date,
+    payment_method,
+    notes,
+    penalty_fee,
+    receipt_number,
+    bank,
+    custom_bank_name: bank === 'others' ? custom_bank_name : null,
+    status,
+  }).eq('id', paymentId);
+
+  if (error) return { error: 'invalid' };
+
+  revalidatePath(`/${locale}/payments`, 'layout');
+  revalidatePath(`/${locale}/contracts`);
+  revalidatePath(`/${locale}/dashboard`);
+  return {};
+}

@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+body {
+  font-family: 'Inter', 'Noto Sans Thai', system-ui, sans-serif;
+}
+
+/* Thai text (headings, labels using lang="th") gets the Thai-optimized
+   stack first so vowel marks/tone marks render with correct spacing. */
+[lang='th'],
+html[lang='th'] body {
+  font-family: 'Noto Sans Thai', 'Inter', system-ui, sans-serif;
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60;
+  }
+}

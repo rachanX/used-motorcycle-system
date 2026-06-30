@@ -1,0 +1,53 @@
+import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import NewContractForm from './new-contract-form';
+
+export default async function NewContractPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations('installments');
+  const me = await getCurrentAppUser();
+  const supabase = await createClient();
+
+  let branchQuery = supabase.from('branches').select('id, branch_name').eq('status', 'active').is('deleted_at', null).order('branch_name');
+  let customerQuery = supabase.from('customers').select('id, first_name, last_name, phone_number, address, guarantor_name, guarantor_phone').is('deleted_at', null).order('first_name');
+  let vehicleQuery = supabase.from('vehicles').select('id, stock_code, brand, model, engine_number, vin_number, license_plate, color, actual_cost').eq('status', 'available').is('deleted_at', null).order('stock_code');
+
+  if (me?.role !== 'developer' && me?.branch_id) {
+    vehicleQuery = vehicleQuery.eq('branch_id', me.branch_id);
+    customerQuery = customerQuery.eq('branch_id', me.branch_id);
+  }
+
+  const [{ data: branches }, { data: customers }, { data: vehicles }] = await Promise.all([
+    branchQuery, customerQuery, vehicleQuery
+  ]);
+
+  return (
+    <div>
+      <Link
+        href={`/${locale}/installments`}
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 mb-4"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        {t('backToList')}
+      </Link>
+
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{t('addContract')}</h1>
+      </div>
+
+      <NewContractForm
+        locale={locale}
+        branches={branches ?? []}
+        customers={(customers ?? []) as any}
+        vehicles={(vehicles ?? []) as any}
+        defaultBranchId={me?.role === 'developer' ? null : me?.branch_id ?? null}
+      />
+    </div>
+  );
+}
