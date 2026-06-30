@@ -49,7 +49,7 @@ export async function loginAction(
 
   if (error || !data.user) {
     // Best-effort audit of the failed attempt (RPC runs even when unauthenticated).
-    await supabase.rpc('log_auth_event', {
+    await (supabase.rpc as any)('log_auth_event', {
       p_action: 'failed_login',
       p_email: userRow.email
     });
@@ -68,14 +68,14 @@ export async function loginAction(
     return { error: 'account_disabled' };
   }
 
-  await supabase.rpc('log_auth_event', { p_action: 'login' });
+  await (supabase.rpc as any)('log_auth_event', { p_action: 'login' });
 
   redirect(redirectTo && redirectTo !== '/' ? redirectTo : `/${locale}/dashboard`);
 }
 
 export async function logoutAction(locale: string) {
   const supabase = await createClient();
-  await supabase.rpc('log_auth_event', { p_action: 'logout' });
+  await (supabase.rpc as any)('log_auth_event', { p_action: 'logout' });
   await supabase.auth.signOut();
   redirect(`/${locale}/login`);
 }

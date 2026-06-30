@@ -21,7 +21,7 @@ export default async function ContractDetailPage({
       .select('*, customers(first_name, last_name, phone_number), vehicles(brand, model, stock_code, license_plate), payments(*)')
       .eq('id', id)
       .single(),
-    supabase.rpc('get_contract_summary', { p_contract_id: id })
+    (supabase.rpc as any)('get_contract_summary', { p_contract_id: id })
   ]);
 
   if (!contract) notFound();

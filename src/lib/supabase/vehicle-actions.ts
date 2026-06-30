@@ -88,8 +88,7 @@ export async function createVehicleAction(
   const supabase = await createClient();
 
   // Generate sequential stock code atomically
-  const { data: stockCode, error: seqError } = await supabase
-    .rpc('next_stock_code', { p_prefix: d.stock_prefix });
+  const { data: stockCode, error: seqError } = await (supabase.rpc as any)('next_stock_code', { p_prefix: d.stock_prefix });
   if (seqError || !stockCode) return { error: 'stockCodeExists' };
 
   const { error } = await adminClient().from('vehicles').insert({

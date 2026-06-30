@@ -62,7 +62,7 @@ export default function VehicleTable({
   currentBranch: string;
   currentSupplier: string;
   currentSort: string;
-  statusOptions?: string[];  // when set, limits the status filter dropdown
+  statusOptions?: string[];
 }) {
   const t = useTranslations('vehicles');
   const tc = useTranslations('common');
@@ -304,7 +304,7 @@ export default function VehicleTable({
       {deleteError && (
         <div className="fixed bottom-4 right-4 z-[70] rounded-lg bg-red-600 text-white text-sm px-4 py-2 shadow-lg">
           {deleteError}
-          <button className="ml-3 underline" onClick={() => setDeleteError(null)}>×</button>
+          <button className="ml-3 underline" onClick={() => setDeleteError(null)}>x</button>
         </div>
       )}
     </div>
