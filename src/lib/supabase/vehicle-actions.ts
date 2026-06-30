@@ -200,6 +200,4 @@ export async function softDeleteVehicleAction(locale: string, vehicleId: string)
   if (error) throw new Error(error.message);
 
   revalidatePath(`/${locale}/vehicles`);
-  revalidatePath(`/${locale}/vehicles/overview`);
-  revalidatePath(`/${locale}/sold`);
-}
+  rev

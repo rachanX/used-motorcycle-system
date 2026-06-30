@@ -10,7 +10,7 @@ const intlMiddleware = createMiddleware({
 });
 
 // Pages that don't require login
-const PUBLIC_PATHS = ['/login'];
+const PUBLIC_PATHS = ['/login', '/reset-password'];
 
 // Pages that require role = 'developer' (checked again by RLS server-side,
 // this is just so staff never even see the page render)

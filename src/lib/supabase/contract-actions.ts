@@ -231,10 +231,4 @@ export async function cancelContractAction(locale: string, contractId: string) {
   const { error: vehicleError } = await admin
     .from('vehicles')
     .update({ status: 'available' })
-    .eq('id', contract.vehicle_id);
-  if (vehicleError) throw vehicleError;
-
-  revalidatePath(`/${locale}/contracts`);
-  revalidatePath(`/${locale}/contracts/${contractId}`);
-  revalidatePath(`/${locale}/vehicles`);
-}
+    .eq('id', cont
