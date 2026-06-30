@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const pathWithoutLocale = '/' + pathname.split('/').slice(2).join('/');
   const isPublic = PUBLIC_PATHS.some((p) => pathWithoutLocale.startsWith(p));
-  const locale = pathname.split('/')[1] ?? defaultLocale;
+  const locale = pathname.split('/')[1] || defaultLocale;
 
   if (!user && !isPublic) {
     const loginUrl = new URL(`/${locale}/login`, request.url);
