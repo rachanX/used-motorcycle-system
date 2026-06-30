@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Used Motorcycle Management System",
+    "appName": "T.Yanyon",
     "save": "Save",
     "cancel": "Cancel",
     "edit": "Edit",
@@ -421,4 +421,4 @@
     "saveSuccess": "Contract saved successfully",
     "recordPayment": "Record Payment"
   }
-}
+}  

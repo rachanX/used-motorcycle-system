@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Used Motorcycle Management System',
-  description: 'ระบบจัดการรถมอเตอร์ไซค์มือสอง'
+  title: 'T.Yanyon',
+  description: 'ต.ยานยนต์'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
