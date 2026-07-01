@@ -78,20 +78,19 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
             <input name="contract_number" required className="input" />
           </F>
           <F label={locale === 'th' ? 'รหัสสต็อก' : 'Stock Code'} required>
-            {branchVehicles.length === 0 ? (
-              <p className="text-sm text-amber-600 py-2">{stockMsg}</p>
-            ) : (
-              <select
-                value={selectedVehicle?.id ?? ''}
-                onChange={e => onVehicleChange(e.target.value)}
-                required
-                className="input"
-              >
-                <option value="" disabled>—</option>
-                {branchVehicles.map(v => (
-                  <option key={v.id} value={v.id}>{v.stock_code}</option>
-                ))}
-              </select>
+            <select
+              value={selectedVehicle?.id ?? ''}
+              onChange={e => onVehicleChange(e.target.value)}
+              required
+              className="input"
+            >
+              <option value="" disabled>—</option>
+              {branchVehicles.map(v => (
+                <option key={v.id} value={v.id}>{v.stock_code}</option>
+              ))}
+            </select>
+            {branchVehicles.length === 0 && (
+              <p className="text-xs text-amber-600 mt-1">{stockMsg}</p>
             )}
             <input type="hidden" name="contract_sequence" value={selectedVehicle ? stockNum(selectedVehicle.stock_code) : ''} />
           </F>
@@ -146,15 +145,14 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
       <Section title={`4. ${t('vehicleInfo')}`}>
         <div className="mb-3">
           <F label={locale === 'th' ? 'เลือกรถมอเตอร์ไซค์' : 'Select Motorcycle'} required>
-            {branchVehicles.length === 0 ? (
-              <p className="text-sm text-amber-600 py-2">{stockMsg}</p>
-            ) : (
-              <select name="vehicle_id" required className="input" value={selectedVehicle?.id ?? ''} onChange={e => onVehicleChange(e.target.value)}>
-                <option value="" disabled>—</option>
-                {branchVehicles.map(v => (
-                  <option key={v.id} value={v.id}>{v.stock_code} — {v.brand} {v.model}</option>
-                ))}
-              </select>
+            <select name="vehicle_id" required className="input" value={selectedVehicle?.id ?? ''} onChange={e => onVehicleChange(e.target.value)}>
+              <option value="" disabled>—</option>
+              {branchVehicles.map(v => (
+                <option key={v.id} value={v.id}>{v.stock_code} — {v.brand} {v.model}</option>
+              ))}
+            </select>
+            {branchVehicles.length === 0 && (
+              <p className="text-xs text-amber-600 mt-1">{stockMsg}</p>
             )}
           </F>
         </div>
