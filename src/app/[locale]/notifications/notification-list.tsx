@@ -9,7 +9,18 @@ import ConfirmModal from '@/components/confirm-modal';
 import { useState } from 'react';
 import type { NotificationRow, NotificationType } from '@/types/database.types';
 
-type NotifWithContract = NotificationRow & { contracts: { contract_number: string } | null };
+type NotifWithContract = NotificationRow & {
+  contracts: { contract_number: string } | null;
+  payments: { due_date: string } | null;
+};
+
+/** Real days overdue for a payment, computed from its due date (Bangkok). */
+function overdueDaysFrom(dueDate: string | null | undefined): number | null {
+  if (!dueDate) return null;
+  const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date());
+  const d = Math.round((Date.parse(todayStr) - Date.parse(dueDate)) / 86400000);
+  return Number.isFinite(d) ? d : null;
+}
 
 const TYPE_KEYS: Record<NotificationType, string> = {
   due_today: 'typeDueToday',
@@ -92,7 +103,13 @@ export default function NotificationList({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${TYPE_COLORS[n.type]}`}>
-                  {t(TYPE_KEYS[n.type])}
+                  {(() => {
+                    const od = n.type.startsWith('overdue') ? overdueDaysFrom(n.payments?.due_date) : null;
+                    if (od != null && od > 0) {
+                      return locale === 'th' ? `ค้างชำระ ${od} วัน` : `Overdue ${od} day${od > 1 ? 's' : ''}`;
+                    }
+                    return t(TYPE_KEYS[n.type]);
+                  })()}
                 </span>
                 {!n.is_read && (
                   <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400">{t('unread')}</span>

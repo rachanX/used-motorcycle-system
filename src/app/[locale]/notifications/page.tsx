@@ -28,7 +28,7 @@ export default async function NotificationsPage({
 
   let query = supabase
     .from('notifications')
-    .select('*, contracts(contract_number)')
+    .select('*, contracts(contract_number), payments(due_date)')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(100);
