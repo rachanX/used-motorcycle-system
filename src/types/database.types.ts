@@ -213,6 +213,9 @@ export type StockSequence = {
   last_seq: number;
 };
 
+export type MotorcycleBrand = { id: string; name: string; is_active: boolean; sort_order: number; created_at: string };
+export type MotorcycleModel = { id: string; name: string; is_active: boolean; sort_order: number; created_at: string };
+
 export type ContractPaymentSummary = {
   contract_id: string;
   contract_number: string;
@@ -309,6 +312,8 @@ export type Database = {
       audit_logs: { Row: AuditLog; Insert: Partial<AuditLog>; Update: never; Relationships: [] };
       stock_prefixes: { Row: StockPrefix; Insert: Partial<StockPrefix>; Update: Partial<StockPrefix>; Relationships: [] };
       stock_sequences: { Row: StockSequence; Insert: Partial<StockSequence>; Update: Partial<StockSequence>; Relationships: [] };
+      motorcycle_brands: { Row: MotorcycleBrand; Insert: Partial<MotorcycleBrand>; Update: Partial<MotorcycleBrand>; Relationships: [] };
+      motorcycle_models: { Row: MotorcycleModel; Insert: Partial<MotorcycleModel>; Update: Partial<MotorcycleModel>; Relationships: [] };
     };
     Views: {
       v_dashboard_summary: { Row: DashboardSummary; Relationships: [] };

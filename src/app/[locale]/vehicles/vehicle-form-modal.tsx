@@ -10,6 +10,7 @@ import {
   type VehicleFormState
 } from '@/lib/supabase/vehicle-actions';
 import type { Vehicle } from '@/types/database.types';
+import { createClient } from '@/lib/supabase/client';
 
 type Prefix = { prefix: string; label: string };
 
@@ -47,6 +48,24 @@ export default function VehicleFormModal({
   // Track status to conditionally require branch and show selling price
   const [status, setStatus] = useState<string>(vehicle?.status ?? 'available');
   const [prefix, setPrefix] = useState<string>(vehicle?.stock_prefix ?? '');
+  const [brand, setBrand] = useState<string>(vehicle?.brand ?? '');
+  const [model, setModel] = useState<string>(vehicle?.model ?? '');
+  const [brandOptions, setBrandOptions] = useState<string[]>([]);
+  const [modelOptions, setModelOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    (async () => {
+      const [{ data: b }, { data: m }] = await Promise.all([
+        supabase.from('motorcycle_brands').select('name').eq('is_active', true).order('name'),
+        supabase.from('motorcycle_models').select('name').eq('is_active', true).order('name'),
+      ]);
+      setBrandOptions((b ?? []).map((x: { name: string }) => x.name));
+      setModelOptions((m ?? []).map((x: { name: string }) => x.name));
+    })();
+  }, []);
+  const brandList = Array.from(new Set([...(brand ? [brand] : []), ...brandOptions]));
+  const modelList = Array.from(new Set([...(model ? [model] : []), ...modelOptions]));
 
   // Live actual_cost = purchase_price + repair_cost
   const [purchasePrice, setPurchasePrice] = useState(vehicle?.purchase_price ?? 0);
@@ -151,10 +170,16 @@ export default function VehicleFormModal({
             <Section label={locale === 'th' ? 'ข้อมูลรถ / Vehicle Info' : 'Vehicle Info'}>
               <div className="grid grid-cols-2 gap-3">
                 <F label={t('brand')} required>
-                  <input name="brand" defaultValue={vehicle?.brand} required className="input" />
+                  <select name="brand" value={brand} onChange={e => setBrand(e.target.value)} required className="input">
+                    <option value="" disabled>—</option>
+                    {brandList.map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
                 </F>
                 <F label={t('model')} required>
-                  <input name="model" defaultValue={vehicle?.model} required className="input" />
+                  <select name="model" value={model} onChange={e => setModel(e.target.value)} required className="input">
+                    <option value="" disabled>—</option>
+                    {modelList.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
                 </F>
                 <F label={locale === 'th' ? 'ปีที่จดทะเบียน' : 'Registration Year'}>
                   <input

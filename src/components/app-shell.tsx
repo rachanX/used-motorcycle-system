@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Bike, Users, FileText, CreditCard,
   Bell, Building2, ShieldCheck, Settings, LogOut,
   Menu, X, Sun, Moon, ChevronDown, ChevronRight,
-  Archive, MessageCircle
+  Archive, MessageCircle, Tag
 } from 'lucide-react';
 import LanguageSwitcher from './language-switcher';
 import NotificationBell from './notification-bell';
@@ -177,6 +177,12 @@ export default function AppShell({
               className={linkClass(isActive(`/${locale}/branches`))}>
               <Building2 className="h-4 w-4 shrink-0" />
               <span className="truncate">{tNav('branches')}</span>
+            </Link>
+
+            <Link href={`/${locale}/brands`} onClick={() => setMobileOpen(false)}
+              className={linkClass(isActive(`/${locale}/brands`))}>
+              <Tag className="h-4 w-4 shrink-0" />
+              <span className="truncate">{locale === 'th' ? 'ยี่ห้อ / รุ่น' : 'Brands & Models'}</span>
             </Link>
 
             {isDeveloper && (
