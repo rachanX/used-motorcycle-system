@@ -79,11 +79,11 @@ export default function PaymentDetailClient({ locale, contract, payments, branch
     setGenerateMsg(null);
     try {
       await closeContractAction(locale, contract.id);
-      router.refresh();
+      alert(isThai ? 'ปิดสัญญาเรียบร้อยแล้ว ✓' : 'Contract closed successfully ✓');
+      router.push(`/${locale}/payments`);
     } catch {
-      setGenerateMsg(isThai ? 'ปิดสัญญาไม่สำเร็จ' : 'Failed to close contract');
-    } finally {
       setClosing(false);
+      setGenerateMsg(isThai ? 'ปิดสัญญาไม่สำเร็จ' : 'Failed to close contract');
     }
   }
 

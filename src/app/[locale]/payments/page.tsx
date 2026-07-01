@@ -34,6 +34,9 @@ export default async function PaymentsPage({
     query = query.eq('branch_id', me.branch_id);
   }
   if (sp.status) query = query.eq('contract_status', sp.status as import('@/types/database.types').ContractStatus);
+  // Default: only ongoing contracts. Completed/cancelled ones drop off the list
+  // (completed contracts move to Sold → Closed Contracts).
+  else query = query.in('contract_status', ['active', 'overdue']);
   if (sp.due === 'overdue') query = query.gt('max_days_overdue', 0);
   if (sp.q) {
     const term = sp.q.replace(/[%]/g, '');
