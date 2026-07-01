@@ -54,6 +54,7 @@ export type Vehicle = {
   model: string;
   sub_model: string | null;
   year: number;
+  registration_year: number | null;
   color: string | null;
   license_plate: string | null;
   vin_number: string | null;

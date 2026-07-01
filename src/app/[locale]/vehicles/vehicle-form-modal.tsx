@@ -150,8 +150,15 @@ export default function VehicleFormModal({
                 <F label={t('model')} required>
                   <input name="model" defaultValue={vehicle?.model} required className="input" />
                 </F>
-                <F label={t('subModel')}>
-                  <input name="sub_model" defaultValue={vehicle?.sub_model ?? ''} className="input" />
+                <F label={locale === 'th' ? 'ปีที่จดทะเบียน' : 'Registration Year'}>
+                  <input
+                    name="registration_year"
+                    type="number"
+                    defaultValue={(vehicle as any)?.registration_year ?? ''}
+                    min={1900}
+                    max={2600}
+                    className="input"
+                  />
                 </F>
                 <F label={t('year')} required>
                   <input
@@ -163,6 +170,9 @@ export default function VehicleFormModal({
                     required
                     className="input"
                   />
+                </F>
+                <F label={t('subModel')}>
+                  <input name="sub_model" defaultValue={vehicle?.sub_model ?? ''} className="input" />
                 </F>
                 <F label={t('color')}>
                   <input name="color" defaultValue={vehicle?.color ?? ''} className="input" />
