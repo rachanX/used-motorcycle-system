@@ -61,7 +61,12 @@ export async function updateSettings(patch: SettingsUpdate): Promise<{ error?: s
   const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (patch.enabled !== undefined) update.enabled = patch.enabled;
   if (patch.destination_type !== undefined) update.destination_type = patch.destination_type;
-  if (patch.destination_id !== undefined) update.destination_id = patch.destination_id || null;
+  if (patch.destination_id !== undefined) {
+    // Strip stray whitespace / quotes / backticks from a pasted ID so LINE
+    // doesn't reject the 'to' value. LINE ids contain none of these.
+    const cleaned = (patch.destination_id ?? '').replace(/[\s'"`]/g, '');
+    update.destination_id = cleaned || null;
+  }
   if (patch.notify_time !== undefined) {
     update.notify_time = patch.notify_time;
     // If the admin changed the time, re-arm today's run so the new time can
@@ -74,8 +79,8 @@ export async function updateSettings(patch: SettingsUpdate): Promise<{ error?: s
   if (patch.language !== undefined) update.language = patch.language;
   // Only touch the token when a non-empty value is supplied, so re-saving the
   // form without re-typing the token doesn't wipe it.
-  if (patch.channel_access_token !== undefined && patch.channel_access_token !== '') {
-    update.channel_access_token = patch.channel_access_token;
+  if (patch.channel_access_token) {
+    update.channel_access_token = patch.channel_access_token.trim();
   }
 
   const { error } = await admin
