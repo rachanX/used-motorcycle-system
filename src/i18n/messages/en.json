@@ -365,7 +365,7 @@
   "sold": {
     "title": "Sold Vehicles",
     "subtitle": "Complete history of cash sales and closed contracts",
-    "tabCash": "Cash Sales",
+    "tabCash": "Sold / Finance",
     "tabClosed": "Closed Contracts",
     "soldDate": "Sold Date",
     "closedDate": "Closed Date",
