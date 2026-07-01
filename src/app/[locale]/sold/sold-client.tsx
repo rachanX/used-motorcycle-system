@@ -113,7 +113,7 @@ export default function SoldPageClient({
       ? stockNum(a.stock_code) - stockNum(b.stock_code)
       : stockNum(b.stock_code) - stockNum(a.stock_code)
   );
-  const colSpan = currentTab === 'cash' ? 7 : 9;
+  const colSpan = currentTab === 'cash' ? 9 : 11;
 
   return (
     <div>
@@ -185,7 +185,9 @@ export default function SoldPageClient({
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800 text-left text-slate-500 dark:text-slate-400">
               <th className="px-4 py-3 font-medium">{locale === 'th' ? 'รหัสสต็อก' : 'Stock Code'}</th>
-              <th className="px-4 py-3 font-medium">{locale === 'th' ? 'รถ' : 'Vehicle'}</th>
+              <th className="px-4 py-3 font-medium">{locale === 'th' ? 'ยี่ห้อ' : 'Brand'}</th>
+              <th className="px-4 py-3 font-medium">{locale === 'th' ? 'รุ่น' : 'Model'}</th>
+              <th className="px-4 py-3 font-medium">{locale === 'th' ? 'ปี' : 'Year'}</th>
               <th className="px-4 py-3 font-medium">{locale === 'th' ? 'ทะเบียน' : 'Plate'}</th>
               <th className="px-4 py-3 font-medium">{locale === 'th' ? 'สี' : 'Color'}</th>
               <th className="px-4 py-3 font-medium">{locale === 'th' ? 'ต้นทุนจริง' : 'Actual Cost'}</th>
@@ -213,9 +215,9 @@ export default function SoldPageClient({
             {sortedRows.map((r) => (
               <tr key={r.vehicle_id} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
                 <td className="px-4 py-3 font-mono text-xs text-slate-500">{r.stock_code}</td>
-                <td className="px-4 py-3 text-slate-900 dark:text-white">
-                  {r.brand} {r.model} {r.year}
-                </td>
+                <td className="px-4 py-3 text-slate-900 dark:text-white">{r.brand}</td>
+                <td className="px-4 py-3 text-slate-900 dark:text-white">{r.model}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{r.year}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{r.license_plate || '—'}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{r.color || '—'}</td>
                 <td className="px-4 py-3 text-slate-900 dark:text-white">{fmtMoney(r.actual_cost)}</td>
