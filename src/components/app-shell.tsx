@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Bike, Users, FileText, CreditCard,
   Bell, Building2, ShieldCheck, Settings, LogOut,
   Menu, X, Sun, Moon, ChevronDown, ChevronRight,
-  Archive
+  Archive, MessageCircle
 } from 'lucide-react';
 import LanguageSwitcher from './language-switcher';
 import NotificationBell from './notification-bell';
@@ -195,6 +195,11 @@ export default function AppShell({
                   className={linkClass(isActive(`/${locale}/settings`))}>
                   <Settings className="h-4 w-4 shrink-0" />
                   <span className="truncate">{tNav('settings')}</span>
+                </Link>
+                <Link href={`/${locale}/notification-history`} onClick={() => setMobileOpen(false)}
+                  className={linkClass(isActive(`/${locale}/notification-history`))}>
+                  <MessageCircle className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{locale === 'th' ? 'ประวัติแจ้งเตือน' : 'Notification History'}</span>
                 </Link>
               </>
             )}

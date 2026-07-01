@@ -14,7 +14,7 @@ const PUBLIC_PATHS = ['/login', '/reset-password'];
 
 // Pages that require role = 'developer' (checked again by RLS server-side,
 // this is just so staff never even see the page render)
-const DEVELOPER_ONLY_PATHS = ['/users', '/audit-logs', '/settings'];
+const DEVELOPER_ONLY_PATHS = ['/users', '/audit-logs', '/settings', '/notification-history'];
 
 export async function middleware(request: NextRequest) {
   // 1. Let next-intl resolve/redirect the locale prefix first.
