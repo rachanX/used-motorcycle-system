@@ -239,3 +239,39 @@ export async function cancelContractAction(locale: string, contractId: string) {
   revalidatePath(`/${locale}/payments`);
   revalidatePath(`/${locale}/contracts`);
 }
+
+// ─── CLOSE CONTRACT (customer settles / stops installments) ───────────────────
+export async function closeContractAction(locale: string, contractId: string) {
+  const me = await getCurrentAppUser();
+  if (!me) throw new Error('Forbidden');
+
+  const supabase = await createClient();
+  const { data: contract } = await supabase
+    .from('contracts')
+    .select('vehicle_id, branch_id')
+    .eq('id', contractId)
+    .single();
+  if (!contract) throw new Error('Not found');
+  if (!isPowerUser(me.role) && contract.branch_id !== me.branch_id) {
+    throw new Error('Forbidden');
+  }
+
+  const admin = adminClient();
+  // Customer is closing the contract early: remove remaining unpaid installments.
+  await admin.from('payments').delete().eq('contract_id', contractId).neq('status', 'paid');
+  // Mark the contract closed/completed with today's end date.
+  const { error: cErr } = await admin
+    .from('contracts')
+    .update({ status: 'completed', end_date: new Date().toISOString().slice(0, 10) })
+    .eq('id', contractId);
+  if (cErr) throw cErr;
+  // Move the vehicle into the "Closed Contracts" bucket.
+  if (contract.vehicle_id) {
+    await admin.from('vehicles').update({ status: 'closed_contract' }).eq('id', contract.vehicle_id);
+  }
+
+  revalidatePath(`/${locale}/payments/${contractId}`);
+  revalidatePath(`/${locale}/installments/${contractId}`);
+  revalidatePath(`/${locale}/installments`);
+  revalidatePath(`/${locale}/sold`);
+}

@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CircleDollarSign, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { CircleDollarSign, Plus, RefreshCw, Trash2, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import RecordPaymentModal from '../record-payment-modal';
 import { addPaymentRowAction, generatePaymentScheduleAction, deletePaymentRowAction, type PaymentRowState } from '@/lib/supabase/installment-actions';
+import { closeContractAction } from '@/lib/supabase/contract-actions';
 import { useActionState, useEffect, useRef } from 'react';
 
 type Payment = {
@@ -43,6 +44,7 @@ export default function PaymentDetailClient({ locale, contract, payments, branch
   const [showAddRow, setShowAddRow] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generateMsg, setGenerateMsg] = useState<string | null>(null);
+  const [closing, setClosing] = useState(false);
 
   async function handleGenerateSchedule() {
     if (!contract.total_terms || !contract.monthly_installment) return;
@@ -65,6 +67,23 @@ export default function PaymentDetailClient({ locale, contract, payments, branch
       }
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function handleCloseContract() {
+    const msg = isThai
+      ? 'ยืนยันปิดสัญญา? งวดที่ยังไม่ชำระจะถูกลบ และสัญญาจะถูกปิด (รถจะย้ายไปแท็บปิดสัญญาแล้ว)'
+      : 'Close this contract? Remaining unpaid installments will be removed and the contract will be closed (the bike moves to Closed Contracts).';
+    if (!confirm(msg)) return;
+    setClosing(true);
+    setGenerateMsg(null);
+    try {
+      await closeContractAction(locale, contract.id);
+      router.refresh();
+    } catch {
+      setGenerateMsg(isThai ? 'ปิดสัญญาไม่สำเร็จ' : 'Failed to close contract');
+    } finally {
+      setClosing(false);
     }
   }
 
@@ -186,6 +205,14 @@ export default function PaymentDetailClient({ locale, contract, payments, branch
         <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
           <h2 className="font-semibold text-slate-900 dark:text-white">{t('paymentSchedule')}</h2>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleCloseContract}
+              disabled={closing}
+              className="inline-flex items-center gap-1.5 text-sm border border-amber-600 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950 rounded-lg px-3 py-1.5 font-medium disabled:opacity-50"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              {closing ? (isThai ? 'กำลังปิด...' : 'Closing...') : (isThai ? 'ลูกค้าปิดสัญญา' : 'Close Contract')}
+            </button>
             {contract.total_terms > 0 && contract.monthly_installment > 0 && (
               <button
                 onClick={handleGenerateSchedule}
