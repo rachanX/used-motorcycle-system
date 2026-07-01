@@ -30,7 +30,7 @@ export default function AppShell({
   user: AppUser;
   recentNotifications: NotifPreview[];
   unreadCount: number;
-  prefixes: { prefix: string; label: string }[];
+  prefixes: { prefix: string; label: string; count?: number }[];
   children: React.ReactNode;
 }) {
   const tNav = useTranslations('nav');
@@ -136,7 +136,7 @@ export default function AppShell({
                       href={`/${locale}/vehicles/${p.prefix.toLowerCase()}`}
                       onClick={() => setMobileOpen(false)}
                       className={linkClass(pathname === `/${locale}/vehicles/${p.prefix.toLowerCase()}`)}>
-                      <span className="truncate">{p.label}</span>
+                      <span className="truncate">{p.label} ({p.count ?? 0})</span>
                     </Link>
                   ))}
                 </div>

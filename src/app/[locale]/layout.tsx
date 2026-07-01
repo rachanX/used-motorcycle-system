@@ -24,11 +24,11 @@ export default async function LocaleLayout({
 
   let recentNotifications: any[] = [];
   let unreadCount = 0;
-  let prefixes: { prefix: string; label: string }[] = [];
+  let prefixes: { prefix: string; label: string; count?: number }[] = [];
 
   if (appUser) {
     const supabase = await createClient();
-    const [notifResult, prefixResult] = await Promise.all([
+    const [notifResult, prefixResult, stockResult] = await Promise.all([
       supabase
         .from('notifications')
         .select('id, type, message, is_read, created_at', { count: 'exact' })
@@ -40,17 +40,29 @@ export default async function LocaleLayout({
         .from('stock_prefixes')
         .select('prefix, label')
         .eq('is_active', true)
-        .order('sort_order')
+        .order('sort_order'),
+      // In-stock vehicles (available or under repair) for the per-prefix counts.
+      supabase
+        .from('vehicles')
+        .select('stock_prefix')
+        .in('status', ['available', 'under_repair'])
+        .is('deleted_at', null)
     ]);
 
     recentNotifications = notifResult.data ?? [];
     unreadCount = notifResult.count ?? 0;
-    prefixes = prefixResult.data ?? [
+
+    const countByPrefix: Record<string, number> = {};
+    for (const v of (stockResult.data ?? []) as { stock_prefix: string | null }[]) {
+      if (v.stock_prefix) countByPrefix[v.stock_prefix] = (countByPrefix[v.stock_prefix] ?? 0) + 1;
+    }
+    const basePrefixes = prefixResult.data ?? [
       { prefix: 'TS', label: 'TS' },
       { prefix: 'TV', label: 'TV' },
       { prefix: 'TM', label: 'TM' },
       { prefix: 'TAC', label: 'TAC' }
     ];
+    prefixes = basePrefixes.map(p => ({ ...p, count: countByPrefix[p.prefix] ?? 0 }));
   }
 
   return (
