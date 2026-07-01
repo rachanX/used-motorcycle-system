@@ -190,7 +190,7 @@ export async function softDeleteContractAction(locale: string, contractId: strin
 
   const { error } = await admin
     .from('contracts')
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: new Date().toISOString(), status: 'cancelled' })
     .eq('id', contractId);
   if (error) throw error;
 
