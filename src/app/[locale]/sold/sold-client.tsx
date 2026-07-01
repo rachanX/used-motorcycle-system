@@ -52,6 +52,7 @@ export default function SoldPageClient({
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
   const [q, setQ] = useState(currentQuery);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -83,6 +84,12 @@ export default function SoldPageClient({
   }
 
   const rows = currentTab === 'cash' ? cashSales : closedContracts;
+  const stockNum = (c: string | null) => parseInt((c ?? '').replace(/[^0-9]/g, ''), 10) || 0;
+  const sortedRows = [...rows].sort((a, b) =>
+    sortDir === 'asc'
+      ? stockNum(a.stock_code) - stockNum(b.stock_code)
+      : stockNum(b.stock_code) - stockNum(a.stock_code)
+  );
   const colSpan = currentTab === 'cash'
     ? (isDeveloper ? 7 : 6)
     : (isDeveloper ? 9 : 8);
@@ -102,6 +109,24 @@ export default function SoldPageClient({
             : 'Search stock code, name, plate, engine, chassis'}
           className="w-full max-w-xl rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 pl-9 pr-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
+
+      {/* Sort by stock code */}
+      <div className="flex items-center gap-1.5 mb-4">
+        <span className="text-xs text-slate-400">{locale === 'th' ? 'เรียงตามรหัสสต็อก' : 'Sort by stock code'}:</span>
+        {(['asc', 'desc'] as const).map((dir) => (
+          <button
+            key={dir}
+            onClick={() => setSortDir(dir)}
+            className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-medium ${
+              sortDir === dir
+                ? 'border-blue-600 bg-blue-600 text-white'
+                : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            {dir === 'asc' ? (locale === 'th' ? 'น้อย → มาก' : 'Min → Max') : (locale === 'th' ? 'มาก → น้อย' : 'Max → Min')}
+          </button>
+        ))}
       </div>
 
       {/* Tabs */}
@@ -153,14 +178,14 @@ export default function SoldPageClient({
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 && (
+            {sortedRows.length === 0 && (
               <tr>
                 <td colSpan={colSpan} className="px-4 py-10 text-center text-slate-400">
                   {currentTab === 'cash' ? t('noSoldVehicles') : t('noClosedContracts')}
                 </td>
               </tr>
             )}
-            {rows.map((r) => (
+            {sortedRows.map((r) => (
               <tr key={r.vehicle_id} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
                 <td className="px-4 py-3 font-mono text-xs text-slate-500">{r.stock_code}</td>
                 <td className="px-4 py-3 text-slate-900 dark:text-white">

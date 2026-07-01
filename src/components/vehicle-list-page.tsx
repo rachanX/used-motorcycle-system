@@ -37,13 +37,15 @@ export default async function VehicleListPage({
   const PAGE_SIZE = 20;
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
+  const sortDir = searchParams.sort === 'desc' ? 'desc' : 'asc';
 
   let query = supabase
     .from('vehicles')
     .select('*, branches(branch_name)', { count: 'exact' })
     .in('status', ['available', 'under_repair'])   // only active stock
     .is('deleted_at', null)
-    .order('stock_code', { ascending: true })
+    .order('stock_num', { ascending: sortDir === 'asc', nullsFirst: false })
+    .order('stock_code', { ascending: sortDir === 'asc' })
     .range(from, to);
 
   if (!isPowerUser(me?.role) && me?.branch_id) {
@@ -65,9 +67,36 @@ export default async function VehicleListPage({
   const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
   const isThai = locale === 'th';
 
+  const basePath = prefix
+    ? `/${locale}/vehicles/${prefix.toLowerCase()}`
+    : `/${locale}/vehicles/overview`;
+  const sortHref = (dir: string) => {
+    const p = new URLSearchParams();
+    if (searchParams.q) p.set('q', searchParams.q);
+    p.set('sort', dir);
+    return `${basePath}?${p.toString()}`;
+  };
+  const sortBtn = (active: boolean) =>
+    `inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-medium ${
+      active
+        ? 'border-blue-600 bg-blue-600 text-white'
+        : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+    }`;
+
   return (
     <div>
-      <p className="text-xs text-slate-400 mb-3">{t('totalResults', { count: count ?? 0 })}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <p className="text-xs text-slate-400">{t('totalResults', { count: count ?? 0 })}</p>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-slate-400">{isThai ? 'เรียงตามรหัสสต็อก' : 'Sort by stock code'}:</span>
+          <Link href={sortHref('asc')} className={sortBtn(sortDir === 'asc')}>
+            {isThai ? 'น้อย → มาก' : 'Min → Max'}
+          </Link>
+          <Link href={sortHref('desc')} className={sortBtn(sortDir === 'desc')}>
+            {isThai ? 'มาก → น้อย' : 'Max → Min'}
+          </Link>
+        </div>
+      </div>
 
       <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <table className="w-full text-sm">
