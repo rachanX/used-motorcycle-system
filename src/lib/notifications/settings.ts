@@ -38,6 +38,7 @@ export function toPublicSettings(s: NotificationSettings | null): PublicNotifica
     notify_time: (s?.notify_time ?? '09:00:00').slice(0, 5), // HH:MM
     min_overdue_days: s?.min_overdue_days ?? 1,
     timezone: s?.timezone ?? 'Asia/Bangkok',
+    language: (s?.language ?? 'th'),
   };
 }
 
@@ -48,6 +49,7 @@ export interface SettingsUpdate {
   destination_id?: string | null;
   notify_time?: string;      // 'HH:MM'
   min_overdue_days?: number;
+  language?: 'th' | 'en';
 }
 
 /** Update the singleton settings row. Token only overwritten when explicitly passed. */
@@ -62,6 +64,7 @@ export async function updateSettings(patch: SettingsUpdate): Promise<{ error?: s
   if (patch.destination_id !== undefined) update.destination_id = patch.destination_id || null;
   if (patch.notify_time !== undefined) update.notify_time = patch.notify_time;
   if (patch.min_overdue_days !== undefined) update.min_overdue_days = patch.min_overdue_days;
+  if (patch.language !== undefined) update.language = patch.language;
   // Only touch the token when a non-empty value is supplied, so re-saving the
   // form without re-typing the token doesn't wipe it.
   if (patch.channel_access_token !== undefined && patch.channel_access_token !== '') {

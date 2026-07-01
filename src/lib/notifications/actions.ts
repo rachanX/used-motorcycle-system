@@ -19,6 +19,7 @@ const settingsSchema = z.object({
   destination_id: z.string().optional().nullable(),
   notify_time: z.string().regex(/^\d{2}:\d{2}$/, 'time'),
   min_overdue_days: z.coerce.number().int().min(0).max(365),
+  language: z.enum(['th', 'en']),
 });
 
 export interface SettingsFormState { ok?: boolean; error?: string; }
@@ -41,6 +42,7 @@ export async function updateNotificationSettingsAction(
     destination_id: (formData.get('destination_id') as string) || null,
     notify_time: formData.get('notify_time'),
     min_overdue_days: formData.get('min_overdue_days'),
+    language: formData.get('language') || 'th',
   });
   if (!parsed.success) return { error: 'invalid_input' };
 

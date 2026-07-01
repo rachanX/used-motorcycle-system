@@ -39,6 +39,7 @@ export interface NotificationSettings {
   notify_time: string;        // 'HH:MM:SS'
   min_overdue_days: number;
   timezone: string;
+  language: 'th' | 'en';
   last_scheduled_run_date: string | null;
 }
 
@@ -51,6 +52,7 @@ export interface PublicNotificationSettings {
   notify_time: string;        // 'HH:MM'
   min_overdue_days: number;
   timezone: string;
+  language: 'th' | 'en';
 }
 
 /** One unpaid, past-due installment joined with display fields. */

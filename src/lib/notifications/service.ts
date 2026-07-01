@@ -34,13 +34,29 @@ function buildProvider(s: NotificationSettings): NotificationProvider | null {
   return new LineProvider(s.channel_access_token);
 }
 
-/** The ⚠️ overdue alert message body. */
-export function formatOverdueMessage(row: OverdueRow): string {
-  const name = `${row.first_name ?? ''} ${row.last_name ?? ''}`.trim();
+/** The ⚠️ overdue alert message body (Thai or English). */
+export function formatOverdueMessage(row: OverdueRow, lang: 'th' | 'en' = 'th'): string {
+  const name = `${row.first_name ?? ''} ${row.last_name ?? ''}`.trim() || '-';
+  if (lang === 'th') {
+    return [
+      '⚠️ แจ้งเตือนงวดค้างชำระ',
+      `เลขที่สัญญา: ${row.contract_number}`,
+      `ลูกค้า: ${name}`,
+      `รหัสสต็อก: ${row.stock_code ?? '-'}`,
+      `ยี่ห้อ: ${row.brand ?? '-'}`,
+      `รุ่น: ${row.model ?? '-'}`,
+      `ทะเบียน: ${row.license_plate ?? '-'}`,
+      `เบอร์โทร: ${row.phone_number ?? '-'}`,
+      `วันครบกำหนด: ${row.due_date}`,
+      `ค้างชำระ: ${row.overdue_days} วัน`,
+      '',
+      'กรุณาติดต่อลูกค้าเพื่อติดตามการชำระเงิน',
+    ].join('\n');
+  }
   return [
     '⚠️ Overdue Installment Alert',
     `Contract No.: ${row.contract_number}`,
-    `Customer: ${name || '-'}`,
+    `Customer: ${name}`,
     `Stock Code: ${row.stock_code ?? '-'}`,
     `Brand: ${row.brand ?? '-'}`,
     `Model: ${row.model ?? '-'}`,
@@ -53,13 +69,20 @@ export function formatOverdueMessage(row: OverdueRow): string {
   ].join('\n');
 }
 
-/** The ⚙️ test message body. */
-export function formatTestMessage(timezone: string): string {
+/** The ⚙️ test message body (Thai or English). */
+export function formatTestMessage(timezone: string, lang: 'th' | 'en' = 'th'): string {
   const now = new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric', month: '2-digit', day: '2-digit',
     hour: '2-digit', minute: '2-digit', hour12: false,
   }).format(new Date()).replace(',', '');
+  if (lang === 'th') {
+    return [
+      '⚙️ ทดสอบการแจ้งเตือน',
+      'ตั้งค่าการแจ้งเตือน LINE สำเร็จแล้ว',
+      `เวลาปัจจุบัน: ${now}`,
+    ].join('\n');
+  }
   return [
     '⚙️ Test Notification',
     'LINE Notification has been configured successfully.',
@@ -137,7 +160,7 @@ export async function runOverdueNotifications(source: TriggerSource): Promise<Ru
 
     const result = await provider.send(
       { type: settings.destination_type, id: settings.destination_id! },
-      formatOverdueMessage(row)
+      formatOverdueMessage(row, settings.language)
     );
 
     await logNotification({
@@ -171,7 +194,7 @@ export async function sendTestNotification(): Promise<{
 
   const result = await provider.send(
     { type: settings.destination_type, id: settings.destination_id! },
-    formatTestMessage(settings.timezone)
+    formatTestMessage(settings.timezone, settings.language)
   );
 
   await logNotification({
@@ -206,7 +229,10 @@ export async function shouldRunSchedulerNow(): Promise<{ run: boolean; reason?: 
     .from('notification_settings')
     .update({ last_scheduled_run_date: today })
     .eq('id', settings.id)
-    .neq('last_scheduled_run_date', today)   // no-op if another ping just claimed it
+    // Match when the date is NULL (never run) OR not today. A bare .neq()
+    // would exclude NULL rows (SQL: NULL <> today is unknown), which would
+    // wrongly block the very first run.
+    .or(`last_scheduled_run_date.is.null,last_scheduled_run_date.neq.${today}`)
     .select('id');
   if (error) return { run: false, reason: 'claim_failed' };
   if (!data || data.length === 0) return { run: false, reason: 'already_ran_today' };

@@ -99,6 +99,13 @@ export default function LineSettingsForm({
           </Field>
         </div>
 
+        <Field label={L('ภาษาข้อความแจ้งเตือน', 'Message language')}>
+          <select name="language" defaultValue={settings.language} className="input">
+            <option value="th">{L('ไทย', 'Thai')}</option>
+            <option value="en">{L('อังกฤษ', 'English')}</option>
+          </select>
+        </Field>
+
         <div className="flex items-center gap-3">
           <button
             type="submit"
