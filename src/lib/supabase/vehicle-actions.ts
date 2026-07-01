@@ -207,3 +207,34 @@ export async function softDeleteVehicleAction(locale: string, vehicleId: string)
   revalidatePath(`/${locale}/vehicles`);
   revalidatePath(`/${locale}/vehicles/overview`);
 }
+
+// ─── QUICK "MARK AS SOLD" (cash sale) FROM THE INVENTORY ROW ──────────────────
+export async function markVehicleSoldAction(
+  locale: string,
+  vehicleId: string,
+  sellingPrice: number
+): Promise<{ error?: string }> {
+  const me = await getCurrentAppUser();
+  if (!me) return { error: 'forbidden' };
+
+  const admin = adminClient();
+  const { data: veh } = await admin
+    .from('vehicles')
+    .select('branch_id, status')
+    .eq('id', vehicleId)
+    .single();
+  if (!veh) return { error: 'not_found' };
+  if (!isPowerUser(me.role) && veh.branch_id !== me.branch_id) return { error: 'forbidden' };
+  if (!['available', 'under_repair'].includes(veh.status as string)) return { error: 'notInStock' };
+  if (!sellingPrice || sellingPrice <= 0) return { error: 'priceInvalid' };
+
+  const { error } = await admin
+    .from('vehicles')
+    .update({ status: 'sold_cash', selling_price: sellingPrice })
+    .eq('id', vehicleId);
+  if (error) return { error: 'saveFailed' };
+
+  revalidatePath(`/${locale}/vehicles`, 'layout');
+  revalidatePath(`/${locale}/sold`);
+  return {};
+}

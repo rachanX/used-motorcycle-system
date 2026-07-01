@@ -3,10 +3,10 @@
 import { useState, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Plus, Pencil, Search, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Search, ChevronLeft, ChevronRight, Trash2, Tag } from 'lucide-react';
 import VehicleFormModal from './vehicle-form-modal';
 import ConfirmModal from '@/components/confirm-modal';
-import { softDeleteVehicleAction } from '@/lib/supabase/vehicle-actions';
+import { softDeleteVehicleAction, markVehicleSoldAction } from '@/lib/supabase/vehicle-actions';
 import type { Vehicle } from '@/types/database.types';
 
 type VehicleWithBranch = Vehicle & { branches: { branch_name: string } | null };
@@ -77,6 +77,7 @@ export default function VehicleTable({
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<VehicleWithBranch | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [sellingRow, setSellingRow] = useState<VehicleWithBranch | null>(null);
 
   function updateParams(next: Record<string, string>, resetPage = true) {
     const params = new URLSearchParams(searchParams.toString());
@@ -222,6 +223,13 @@ export default function VehicleTable({
                 <td className="px-4 py-3 text-right">
                   <div className="inline-flex items-center gap-3">
                     <button
+                      onClick={() => setSellingRow(v)}
+                      className="inline-flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                    >
+                      <Tag className="h-3.5 w-3.5" />
+                      {locale === 'th' ? 'ขาย' : 'Sold'}
+                    </button>
+                    <button
                       onClick={() => setEditing(v)}
                       className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-700 text-sm font-medium"
                     >
@@ -307,12 +315,63 @@ export default function VehicleTable({
           onClose={() => setDeleting(null)}
         />
       )}
+      {sellingRow && (
+        <SoldModal
+          locale={locale}
+          vehicle={sellingRow}
+          onClose={() => { setSellingRow(null); router.refresh(); }}
+        />
+      )}
+
       {deleteError && (
         <div className="fixed bottom-4 right-4 z-[70] rounded-lg bg-red-600 text-white text-sm px-4 py-2 shadow-lg">
           {deleteError}
           <button className="ml-3 underline" onClick={() => setDeleteError(null)}>x</button>
         </div>
       )}
+    </div>
+  );
+}
+
+function SoldModal({ locale, vehicle, onClose }: { locale: string; vehicle: any; onClose: () => void }) {
+  const isThai = locale === 'th';
+  const L = (th: string, en: string) => (isThai ? th : en);
+  const [price, setPrice] = useState<string>(vehicle.selling_price ? String(vehicle.selling_price) : '');
+  const [pending, setPending] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function submit() {
+    const n = Number(price);
+    if (!n || n <= 0) { setErr(L('กรุณากรอกราคาขายให้ถูกต้อง', 'Please enter a valid selling price')); return; }
+    setPending(true); setErr(null);
+    const res = await markVehicleSoldAction(locale, vehicle.id, n);
+    setPending(false);
+    if (res?.error) { setErr(res.error); return; }
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
+      <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6" onClick={e => e.stopPropagation()}>
+        <h2 className="font-semibold text-slate-900 dark:text-white mb-1">{L('บันทึกการขาย', 'Mark as Sold')}</h2>
+        <p className="text-xs text-slate-500 mb-4 font-mono">{vehicle.stock_code} · {vehicle.brand} {vehicle.model}</p>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">{L('ราคาขาย', 'Selling Price')}</label>
+        <input
+          type="number" min={0} step="0.01" value={price} autoFocus
+          onChange={e => setPrice(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') submit(); }}
+          className="input"
+        />
+        {err && <p className="text-sm text-red-600 mt-2">{err}</p>}
+        <div className="mt-5 flex justify-end gap-2">
+          <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800">
+            {L('ยกเลิก', 'Cancel')}
+          </button>
+          <button onClick={submit} disabled={pending} className="px-4 py-2 text-sm rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50">
+            {pending ? L('กำลังบันทึก…', 'Saving…') : L('ยืนยันการขาย', 'Confirm Sold')}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
