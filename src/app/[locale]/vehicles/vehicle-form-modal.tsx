@@ -222,10 +222,11 @@ export default function VehicleFormModal({
                     className="input"
                   >
                     <option value="available">{t('statusAvailable')}</option>
-                    <option value="reserved">{t('statusReserved')}</option>
-                    <option value="under_repair">{t('statusUnderRepair')}</option>
                     <option value="sold_cash">{t('statusSoldCash')}</option>
-                    <option value="closed_contract">{t('statusClosedContract')}</option>
+                    <option value="under_repair">{t('statusUnderRepair')}</option>
+                    {!['available', 'sold_cash', 'under_repair'].includes(status) && (
+                      <option value={status}>{status}</option>
+                    )}
                   </select>
                 </F>
               </div>

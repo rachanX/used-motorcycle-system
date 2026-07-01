@@ -160,7 +160,7 @@
     "statusAvailable": "พร้อมขาย",
     "statusReserved": "จองแล้ว",
     "statusFinancing": "อยู่ระหว่างผ่อน",
-    "statusSoldCash": "ขายสดแล้ว",
+    "statusSoldCash": "ขายแล้ว",
     "statusClosedContract": "ปิดสัญญาแล้ว",
     "allStatus": "ทุกสถานะ",
     "allBranches": "ทุกสาขา",

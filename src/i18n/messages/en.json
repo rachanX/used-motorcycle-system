@@ -160,7 +160,7 @@
     "statusAvailable": "Available",
     "statusReserved": "Reserved",
     "statusFinancing": "Financing",
-    "statusSoldCash": "Sold Cash",
+    "statusSoldCash": "Sold",
     "statusClosedContract": "Closed Contract",
     "allStatus": "All Statuses",
     "allBranches": "All Branches",
