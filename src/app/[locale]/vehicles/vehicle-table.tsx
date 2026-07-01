@@ -155,6 +155,8 @@ export default function VehicleTable({
           <option value="price_asc">{t('sortPriceLowHigh')}</option>
           <option value="price_desc">{t('sortPriceHighLow')}</option>
           <option value="year_desc">{t('sortYearNewOld')}</option>
+          <option value="stock_asc">{locale === 'th' ? 'รหัสสต็อก: น้อย → มาก' : 'Stock code: Min → Max'}</option>
+          <option value="stock_desc">{locale === 'th' ? 'รหัสสต็อก: มาก → น้อย' : 'Stock code: Max → Min'}</option>
         </select>
 
         <button

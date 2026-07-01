@@ -112,21 +112,16 @@ export default function SoldPageClient({
       </div>
 
       {/* Sort by stock code */}
-      <div className="flex items-center gap-1.5 mb-4">
+      <div className="flex items-center gap-2 mb-4">
         <span className="text-xs text-slate-400">{locale === 'th' ? 'เรียงตามรหัสสต็อก' : 'Sort by stock code'}:</span>
-        {(['asc', 'desc'] as const).map((dir) => (
-          <button
-            key={dir}
-            onClick={() => setSortDir(dir)}
-            className={`inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-medium ${
-              sortDir === dir
-                ? 'border-blue-600 bg-blue-600 text-white'
-                : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            {dir === 'asc' ? (locale === 'th' ? 'น้อย → มาก' : 'Min → Max') : (locale === 'th' ? 'มาก → น้อย' : 'Max → Min')}
-          </button>
-        ))}
+        <select
+          value={sortDir}
+          onChange={(e) => setSortDir(e.target.value as 'asc' | 'desc')}
+          className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white"
+        >
+          <option value="asc">{locale === 'th' ? 'น้อย → มาก' : 'Min → Max'}</option>
+          <option value="desc">{locale === 'th' ? 'มาก → น้อย' : 'Max → Min'}</option>
+        </select>
       </div>
 
       {/* Tabs */}

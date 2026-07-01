@@ -10,7 +10,9 @@ const SORT_MAP: Record<string, { column: string; ascending: boolean }> = {
   newest: { column: 'created_at', ascending: false },
   price_asc: { column: 'purchase_price', ascending: true },
   price_desc: { column: 'purchase_price', ascending: false },
-  year_desc: { column: 'year', ascending: false }
+  year_desc: { column: 'year', ascending: false },
+  stock_asc: { column: 'stock_num', ascending: true },
+  stock_desc: { column: 'stock_num', ascending: false }
 };
 
 export default async function VehiclesOverviewPage({
