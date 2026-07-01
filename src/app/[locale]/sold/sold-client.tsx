@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Search, Trash2 } from 'lucide-react';
+import { Search, Trash2, Eye } from 'lucide-react';
 import { softDeleteVehicleAction } from '@/lib/supabase/vehicle-actions';
 
 type SoldRow = {
@@ -28,6 +28,15 @@ type SoldRow = {
   sale_price: number | null;
   start_date: string | null;
   end_date: string | null;
+  sub_model: string | null;
+  registration_year: number | null;
+  mileage: number | null;
+  date_received: string | null;
+  previous_owner: string | null;
+  vehicle_source: string | null;
+  received_registration_book: boolean | null;
+  received_tax_invoice: boolean | null;
+  registration_received_date: string | null;
 };
 
 export default function SoldPageClient({
@@ -57,6 +66,7 @@ export default function SoldPageClient({
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [prefixFilter, setPrefixFilter] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [detailRow, setDetailRow] = useState<SoldRow | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function updateParams(next: Record<string, string>) {
@@ -95,9 +105,7 @@ export default function SoldPageClient({
       ? stockNum(a.stock_code) - stockNum(b.stock_code)
       : stockNum(b.stock_code) - stockNum(a.stock_code)
   );
-  const colSpan = currentTab === 'cash'
-    ? (isDeveloper ? 7 : 6)
-    : (isDeveloper ? 9 : 8);
+  const colSpan = currentTab === 'cash' ? 7 : 9;
 
   return (
     <div>
@@ -183,9 +191,7 @@ export default function SoldPageClient({
                   <th className="px-4 py-3 font-medium">{t('closedDate')}</th>
                 </>
               )}
-              {isDeveloper && (
-                <th className="px-4 py-3 font-medium text-right">{tc('actions')}</th>
-              )}
+              <th className="px-4 py-3 font-medium text-right">{tc('actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -217,18 +223,25 @@ export default function SoldPageClient({
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{r.end_date || '—'}</td>
                   </>
                 )}
-                {isDeveloper && (
-                  <td className="px-4 py-3 text-right">
+                <td className="px-4 py-3 text-right whitespace-nowrap">
+                  <button
+                    onClick={() => setDetailRow(r)}
+                    className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    {locale === 'th' ? 'รายละเอียด' : 'Detail'}
+                  </button>
+                  {isDeveloper && (
                     <button
                       onClick={() => handleDelete(r.vehicle_id)}
                       disabled={deleting === r.vehicle_id}
-                      className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 disabled:opacity-40 text-sm font-medium"
+                      className="ml-3 inline-flex items-center gap-1 text-red-600 hover:text-red-700 disabled:opacity-40 text-sm font-medium"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                       {deleting === r.vehicle_id ? tc('loading') : tc('delete')}
                     </button>
-                  </td>
-                )}
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -240,6 +253,89 @@ export default function SoldPageClient({
           <button onClick={() => setDeleteError(null)} className="underline">✕</button>
         </div>
       )}
+
+      {detailRow && (
+        <VehicleDetailModal row={detailRow} locale={locale} onClose={() => setDetailRow(null)} />
+      )}
+    </div>
+  );
+}
+
+function DRow({ label, value, mono }: { label: string; value: string | number | null | undefined; mono?: boolean }) {
+  return (
+    <div>
+      <p className="text-xs text-slate-400">{label}</p>
+      <p className={`text-slate-800 dark:text-slate-100 ${mono ? 'font-mono' : ''}`}>
+        {value === null || value === undefined || value === '' ? '—' : value}
+      </p>
+    </div>
+  );
+}
+
+function VehicleDetailModal({ row, locale, onClose }: { row: SoldRow; locale: string; onClose: () => void }) {
+  const isThai = locale === 'th';
+  const L = (th: string, en: string) => (isThai ? th : en);
+  const money = (n: number | null) =>
+    n == null ? '—' : Number(n).toLocaleString(isThai ? 'th-TH' : 'en-US', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 });
+  const sourceLabel: Record<string, string> = { buy: L('ซื้อ', 'Buy'), trade_in: L('เทิร์น', 'Trade-in'), auction: L('ประมูล', 'Auction'), other: L('อื่นๆ', 'Other') };
+  const statusLabel = row.status === 'sold_cash' ? L('ขายแล้ว', 'Sold') : L('ปิดสัญญาแล้ว', 'Closed Contract');
+  const yesNo = (b: boolean | null) => b == null ? null : (b ? L('ได้รับ', 'Yes') : L('ยังไม่ได้รับ', 'No'));
+  const custName = (row.first_name || row.last_name) ? `${row.first_name ?? ''} ${row.last_name ?? ''}`.trim() : null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
+      <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-slate-900 dark:text-white">
+            {L('รายละเอียดรถ', 'Motorcycle Detail')} — <span className="font-mono">{row.stock_code}</span>
+          </h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">✕</button>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
+          <DRow label={L('รหัสสต็อก', 'Stock Code')} value={row.stock_code} mono />
+          <DRow label={L('สถานะ', 'Status')} value={statusLabel} />
+          <DRow label={L('ยี่ห้อ', 'Brand')} value={row.brand} />
+          <DRow label={L('รุ่น', 'Model')} value={row.model} />
+          <DRow label={L('รุ่นย่อย', 'Sub-model')} value={row.sub_model} />
+          <DRow label={L('ปี', 'Year')} value={row.year} />
+          <DRow label={L('ปีที่จดทะเบียน', 'Registration Year')} value={row.registration_year} />
+          <DRow label={L('สี', 'Color')} value={row.color} />
+          <DRow label={L('ทะเบียน', 'License Plate')} value={row.license_plate} />
+          <DRow label={L('เลขตัวถัง', 'Chassis No.')} value={row.vin_number} />
+          <DRow label={L('เลขเครื่อง', 'Engine No.')} value={row.engine_number} />
+          <DRow label={L('เลขไมล์', 'Mileage')} value={row.mileage} />
+          <DRow label={L('วันที่รับรถ', 'Date Received')} value={row.date_received} />
+          <DRow label={L('เจ้าของเดิม', 'Previous Owner')} value={row.previous_owner} />
+          <DRow label={L('แหล่งที่มา', 'Source')} value={row.vehicle_source ? (sourceLabel[row.vehicle_source] ?? row.vehicle_source) : null} />
+          <DRow label={L('ต้นทุนซื้อ', 'Purchase Price')} value={money(row.purchase_price)} />
+          <DRow label={L('ค่าซ่อม', 'Repair Cost')} value={money(row.repair_cost)} />
+          <DRow label={L('ต้นทุนจริง', 'Actual Cost')} value={money(row.actual_cost)} />
+          <DRow label={L('ราคาขาย', 'Selling Price')} value={money(row.selling_price ?? row.sale_price)} />
+          <DRow label={L('เล่มทะเบียน', 'Reg. Book')} value={yesNo(row.received_registration_book)} />
+          <DRow label={L('ใบกำกับภาษี', 'Tax Invoice')} value={yesNo(row.received_tax_invoice)} />
+          <DRow label={L('วันรับเล่มทะเบียน', 'Reg. Received')} value={row.registration_received_date} />
+        </div>
+
+        {(row.contract_number || custName) && (
+          <>
+            <h3 className="font-semibold text-slate-900 dark:text-white mt-5 mb-2 text-sm">{L('ข้อมูลสัญญา / ลูกค้า', 'Contract / Customer')}</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
+              <DRow label={L('เลขที่สัญญา', 'Contract No.')} value={row.contract_number} />
+              <DRow label={L('ลูกค้า', 'Customer')} value={custName} />
+              <DRow label={L('เบอร์โทร', 'Phone')} value={row.phone_number} />
+              <DRow label={L('วันเริ่มสัญญา', 'Start Date')} value={row.start_date} />
+              <DRow label={L('วันปิดสัญญา', 'End Date')} value={row.end_date} />
+            </div>
+          </>
+        )}
+
+        <div className="mt-5 flex justify-end">
+          <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg bg-slate-800 dark:bg-slate-700 text-white">
+            {L('ปิด', 'Close')}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
