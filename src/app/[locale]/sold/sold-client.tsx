@@ -126,7 +126,7 @@ export default function SoldPageClient({
         >
           <option value="">{locale === 'th' ? 'ทั้งหมด' : 'All'}</option>
           {prefixes.map((p) => (
-            <option key={p.prefix} value={p.prefix.toUpperCase()}>{p.prefix}{p.label ? ` — ${p.label}` : ''}</option>
+            <option key={p.prefix} value={p.prefix.toUpperCase()}>{p.label && p.label !== p.prefix ? `${p.prefix} — ${p.label}` : p.prefix}</option>
           ))}
         </select>
         <span className="text-xs text-slate-400 ml-2">{locale === 'th' ? 'เรียงตามรหัสสต็อก' : 'Sort by stock code'}:</span>
