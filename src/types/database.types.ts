@@ -208,6 +208,11 @@ export type StockPrefix = {
   created_at: string;
 };
 
+export type StockSequence = {
+  prefix: string;
+  last_seq: number;
+};
+
 export type ContractPaymentSummary = {
   contract_id: string;
   contract_number: string;
@@ -303,6 +308,7 @@ export type Database = {
       notifications: { Row: NotificationRow; Insert: Partial<NotificationRow>; Update: Partial<NotificationRow>; Relationships: [] };
       audit_logs: { Row: AuditLog; Insert: Partial<AuditLog>; Update: never; Relationships: [] };
       stock_prefixes: { Row: StockPrefix; Insert: Partial<StockPrefix>; Update: Partial<StockPrefix>; Relationships: [] };
+      stock_sequences: { Row: StockSequence; Insert: Partial<StockSequence>; Update: Partial<StockSequence>; Relationships: [] };
     };
     Views: {
       v_dashboard_summary: { Row: DashboardSummary; Relationships: [] };

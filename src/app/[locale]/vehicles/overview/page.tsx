@@ -57,11 +57,14 @@ export default async function VehiclesOverviewPage({
     query = query.or(`stock_code.ilike.%${term}%,brand.ilike.%${term}%,model.ilike.%${term}%,license_plate.ilike.%${term}%,vin_number.ilike.%${term}%`);
   }
 
-  const [{ data: vehicles, count }, { data: branches }, { data: prefixRows }] = await Promise.all([
+  const [{ data: vehicles, count }, { data: branches }, { data: prefixRows }, { data: seqRows }] = await Promise.all([
     query,
     supabase.from('branches').select('id, branch_name').eq('status', 'active').is('deleted_at', null).order('branch_name'),
-    supabase.from('stock_prefixes').select('prefix, label').eq('is_active', true).order('sort_order')
+    supabase.from('stock_prefixes').select('prefix, label').eq('is_active', true).order('sort_order'),
+    supabase.from('stock_sequences').select('prefix, last_seq')
   ]);
+  const nextByPrefix: Record<string, number> = {};
+  for (const r of (seqRows ?? []) as { prefix: string; last_seq: number }[]) nextByPrefix[r.prefix] = (r.last_seq ?? 0) + 1;
 
   const prefixes = (prefixRows ?? []) as { prefix: string; label: string }[];
   const suppliers: string[] = [];
@@ -81,6 +84,7 @@ export default async function VehiclesOverviewPage({
         branches={branches ?? []}
         suppliers={suppliers}
         prefixes={prefixes}
+        nextByPrefix={nextByPrefix}
         defaultBranchId={isPowerUser(me?.role) ? null : me?.branch_id ?? null}
         isDeveloper={isPowerUser(me?.role)}
         totalCount={count ?? 0}

@@ -35,6 +35,7 @@ export default function VehicleTable({
   branches,
   suppliers,
   prefixes,
+  nextByPrefix,
   defaultBranchId,
   isDeveloper,
   totalCount,
@@ -52,6 +53,7 @@ export default function VehicleTable({
   branches: { id: string; branch_name: string }[];
   suppliers: string[];
   prefixes: { prefix: string; label: string }[];
+  nextByPrefix?: Record<string, number>;
   defaultBranchId: string | null;
   isDeveloper: boolean;
   totalCount: number;
@@ -273,6 +275,7 @@ export default function VehicleTable({
           mode="create"
           branches={branches}
           prefixes={prefixes}
+          nextByPrefix={nextByPrefix}
           defaultBranchId={defaultBranchId}
           onClose={() => { setAdding(false); router.refresh(); }}
         />
@@ -284,6 +287,7 @@ export default function VehicleTable({
           vehicle={editing}
           branches={branches}
           prefixes={prefixes}
+          nextByPrefix={nextByPrefix}
           defaultBranchId={defaultBranchId}
           onClose={() => { setEditing(null); router.refresh(); }}
         />

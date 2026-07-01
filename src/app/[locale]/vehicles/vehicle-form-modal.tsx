@@ -19,6 +19,7 @@ export default function VehicleFormModal({
   vehicle,
   branches,
   prefixes,
+  nextByPrefix,
   defaultBranchId,
   onClose
 }: {
@@ -27,6 +28,7 @@ export default function VehicleFormModal({
   vehicle?: Vehicle;
   branches: { id: string; branch_name: string }[];
   prefixes: Prefix[];
+  nextByPrefix?: Record<string, number>;
   defaultBranchId: string | null;
   onClose: () => void;
 }) {
@@ -44,6 +46,7 @@ export default function VehicleFormModal({
 
   // Track status to conditionally require branch and show selling price
   const [status, setStatus] = useState<string>(vehicle?.status ?? 'available');
+  const [prefix, setPrefix] = useState<string>(vehicle?.stock_prefix ?? '');
 
   // Live actual_cost = purchase_price + repair_cost
   const [purchasePrice, setPurchasePrice] = useState(vehicle?.purchase_price ?? 0);
@@ -97,6 +100,7 @@ export default function VehicleFormModal({
                   <select
                     name={mode === 'edit' ? undefined : 'stock_prefix'}
                     defaultValue={vehicle?.stock_prefix ?? ''}
+                    onChange={e => setPrefix(e.target.value)}
                     required
                     disabled={mode === 'edit'}
                     className="input"
@@ -107,8 +111,10 @@ export default function VehicleFormModal({
                     ))}
                   </select>
                   {mode === 'create' && (
-                    <p className="text-xs text-slate-400 mt-1">
-                      {t('generating')}
+                    <p className={`text-xs mt-1 ${prefix ? 'font-mono text-blue-600 dark:text-blue-400' : 'text-slate-400'}`}>
+                      {prefix
+                        ? `${locale === 'th' ? 'รหัสถัดไป' : 'Next code'}: ${prefix}-${nextByPrefix?.[prefix] ?? 1}`
+                        : (locale === 'th' ? 'เลือกประเภทสต็อกเพื่อดูรหัส' : 'Select a stock type to see the code')}
                     </p>
                   )}
                   {mode === 'edit' && vehicle?.stock_code && (
