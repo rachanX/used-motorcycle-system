@@ -214,7 +214,7 @@ export type StockSequence = {
 };
 
 export type MotorcycleBrand = { id: string; name: string; is_active: boolean; sort_order: number; created_at: string };
-export type MotorcycleModel = { id: string; name: string; is_active: boolean; sort_order: number; created_at: string };
+export type MotorcycleModel = { id: string; name: string; brand_id: string; is_active: boolean; sort_order: number; created_at: string };
 
 export type ContractPaymentSummary = {
   contract_id: string;

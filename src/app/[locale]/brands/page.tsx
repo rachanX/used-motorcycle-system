@@ -17,7 +17,7 @@ export default async function BrandsPage({
   const supabase = await createClient();
   const [{ data: brands }, { data: models }] = await Promise.all([
     supabase.from('motorcycle_brands').select('id, name, is_active').order('name'),
-    supabase.from('motorcycle_models').select('id, name, is_active').order('name'),
+    supabase.from('motorcycle_models').select('id, name, is_active, brand_id').order('name'),
   ]);
 
   const isThai = locale === 'th';

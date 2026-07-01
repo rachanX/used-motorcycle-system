@@ -20,13 +20,20 @@ async function assertPower(): Promise<boolean> {
 export async function createCatalogItem(
   locale: string,
   kind: CatalogKind,
-  name: string
+  name: string,
+  brandId?: string
 ): Promise<{ error?: string }> {
   if (!(await assertPower())) return { error: 'forbidden' };
   const clean = (name || '').trim();
   if (!clean) return { error: 'invalid' };
 
-  const { error } = await adminClient().from(table(kind)).insert({ name: clean });
+  const payload: Record<string, unknown> = { name: clean };
+  if (kind === 'model') {
+    if (!brandId) return { error: 'brandRequired' };
+    payload.brand_id = brandId;
+  }
+
+  const { error } = await adminClient().from(table(kind)).insert(payload as never);
   if (error) return { error: error.code === '23505' ? 'exists' : 'invalid' };
 
   revalidatePath(`/${locale}/brands`);

@@ -1,0 +1,66 @@
+import { getTranslations } from 'next-intl/server';
+import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import CustomerTable from './customer-table';
+
+const PAGE_SIZE = 20;
+
+export default async function CustomersPage({
+  params,
+  searchParams
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
+}) {
+  const { locale } = await params;
+  const sp = await searchParams;
+  const me = await getCurrentAppUser();
+  const supabase = await createClient();
+
+  const page = Math.max(1, parseInt(sp.page ?? '1', 10) || 1);
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  let query = supabase
+    .from('customers')
+    .select('*', { count: 'exact' })
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .range(from, to);
+
+  if (sp.q) {
+    const term = sp.q.replace(/[%]/g, '');
+    query = query.or(
+      `first_name.ilike.%${term}%,last_name.ilike.%${term}%,phone_number.ilike.%${term}%,national_id.ilike.%${term}%`
+    );
+  }
+
+  const [{ data: customers, count, error }, { data: branches }] = await Promise.all([
+    query,
+    supabase.from('branches').select('id, branch_name').eq('status', 'active').is('deleted_at', null).order('branch_name')
+  ]);
+
+  const t = await getTranslations('customers');
+  const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{t('title')}</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('subtitle')}</p>
+      </div>
+
+      <CustomerTable
+        locale={locale}
+        customers={customers ?? []}
+        branches={branches ?? []}
+        defaultBranchId={me?.role === 'developer' ? null : me?.branch_id ?? null}
+        isDeveloper={me?.role === 'developer'}
+        page={page}
+        totalPages={totalPages}
+        currentQuery={sp.q ?? ''}
+      />
+
+      {error && <p className="mt-4 text-sm text-red-600">{error.message}</p>}
+    </div>
+  );
+}

@@ -50,22 +50,34 @@ export default function VehicleFormModal({
   const [prefix, setPrefix] = useState<string>(vehicle?.stock_prefix ?? '');
   const [brand, setBrand] = useState<string>(vehicle?.brand ?? '');
   const [model, setModel] = useState<string>(vehicle?.model ?? '');
-  const [brandOptions, setBrandOptions] = useState<string[]>([]);
-  const [modelOptions, setModelOptions] = useState<string[]>([]);
+  const [brandRows, setBrandRows] = useState<{ id: string; name: string }[]>([]);
+  const [modelRows, setModelRows] = useState<{ name: string; brand_id: string }[]>([]);
 
   useEffect(() => {
     const supabase = createClient();
     (async () => {
       const [{ data: b }, { data: m }] = await Promise.all([
-        supabase.from('motorcycle_brands').select('name').eq('is_active', true).order('name'),
-        supabase.from('motorcycle_models').select('name').eq('is_active', true).order('name'),
+        supabase.from('motorcycle_brands').select('id, name').eq('is_active', true).order('name'),
+        supabase.from('motorcycle_models').select('name, brand_id').eq('is_active', true).order('name'),
       ]);
-      setBrandOptions((b ?? []).map((x: { name: string }) => x.name));
-      setModelOptions((m ?? []).map((x: { name: string }) => x.name));
+      setBrandRows((b ?? []) as { id: string; name: string }[]);
+      setModelRows((m ?? []) as { name: string; brand_id: string }[]);
     })();
   }, []);
-  const brandList = Array.from(new Set([...(brand ? [brand] : []), ...brandOptions]));
-  const modelList = Array.from(new Set([...(model ? [model] : []), ...modelOptions]));
+
+  const selectedBrandId = brandRows.find(b => b.name === brand)?.id ?? null;
+  const brandList = Array.from(new Set([...(brand ? [brand] : []), ...brandRows.map(b => b.name)]));
+  const modelList = Array.from(new Set([
+    ...(model ? [model] : []),
+    ...(selectedBrandId ? modelRows.filter(m => m.brand_id === selectedBrandId).map(m => m.name) : []),
+  ]));
+
+  function onBrandChange(v: string) {
+    setBrand(v);
+    const bid = brandRows.find(b => b.name === v)?.id ?? null;
+    const stillValid = !!model && modelRows.some(m => m.brand_id === bid && m.name === model);
+    if (!stillValid) setModel('');
+  }
 
   // Live actual_cost = purchase_price + repair_cost
   const [purchasePrice, setPurchasePrice] = useState(vehicle?.purchase_price ?? 0);
@@ -170,7 +182,7 @@ export default function VehicleFormModal({
             <Section label={locale === 'th' ? 'ข้อมูลรถ / Vehicle Info' : 'Vehicle Info'}>
               <div className="grid grid-cols-2 gap-3">
                 <F label={t('brand')} required>
-                  <select name="brand" value={brand} onChange={e => setBrand(e.target.value)} required className="input">
+                  <select name="brand" value={brand} onChange={e => onBrandChange(e.target.value)} required className="input">
                     <option value="" disabled>—</option>
                     {brandList.map(b => <option key={b} value={b}>{b}</option>)}
                   </select>

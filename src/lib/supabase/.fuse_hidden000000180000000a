@@ -1,0 +1,66 @@
+'use server';
+
+import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { adminClient } from '@/lib/supabase/admin';
+import { revalidatePath } from 'next/cache';
+
+export async function markNotificationReadAction(locale: string, notificationId: string) {
+  const me = await getCurrentAppUser();
+  if (!me) throw new Error('Forbidden');
+
+  const supabase = await createClient();
+  const { data: notif } = await supabase
+    .from('notifications')
+    .select('branch_id')
+    .eq('id', notificationId)
+    .single();
+  if (!notif) throw new Error('Not found');
+  if (!isPowerUser(me.role) && notif.branch_id !== me.branch_id) throw new Error('Forbidden');
+
+  const { error } = await adminClient()
+    .from('notifications')
+    .update({ is_read: true })
+    .eq('id', notificationId);
+  if (error) throw error;
+
+  revalidatePath(`/${locale}/notifications`);
+  revalidatePath(`/${locale}/dashboard`);
+}
+
+export async function softDeleteNotificationAction(locale: string, notificationId: string) {
+  const me = await getCurrentAppUser();
+  if (!me) throw new Error('Forbidden');
+
+  const supabase = await createClient();
+  const { data: notif } = await supabase
+    .from('notifications')
+    .select('branch_id')
+    .eq('id', notificationId)
+    .single();
+  if (!notif) throw new Error('Not found');
+  if (!isPowerUser(me.role) && notif.branch_id !== me.branch_id) throw new Error('Forbidden');
+
+  const { error } = await adminClient()
+    .from('notifications')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', notificationId);
+  if (error) throw error;
+
+  revalidatePath(`/${locale}/notifications`);
+  revalidatePath(`/${locale}/dashboard`);
+}
+
+export async function markAllNotificationsReadAction(locale: string) {
+  const me = await getCurrentAppUser();
+  if (!me) throw new Error('Forbidden');
+
+  let query = adminClient().from('notifications').update({ is_read: true }).eq('is_read', false);
+  if (!isPowerUser(me.role) && me.branch_id) {
+    query = query.eq('branch_id', me.branch_id);
+  }
+  const { error } = await query;
+  if (error) throw error;
+
+  revalidatePath(`/${locale}/notifications`);
+  revalidatePath(`/${locale}/dashboard`);
+}

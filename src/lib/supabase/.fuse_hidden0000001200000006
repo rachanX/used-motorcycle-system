@@ -1,0 +1,111 @@
+'use server';
+
+import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
+import { adminClient } from '@/lib/supabase/admin';
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
+const customerSchema = z.object({
+  first_name: z.string().min(1),
+  last_name: z.string().min(1),
+  phone_number: z.string().min(1),
+  national_id: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  province: z.string().optional().nullable(),
+  district: z.string().optional().nullable(),
+  postal_code: z.string().optional().nullable(),
+  guarantor_name: z.string().optional().nullable(),
+  guarantor_phone: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  branch_id: z.string().uuid()
+});
+
+export interface CustomerFormState {
+  error?: string;
+}
+
+function parseForm(formData: FormData) {
+  return customerSchema.safeParse({
+    first_name: formData.get('first_name'),
+    last_name: formData.get('last_name'),
+    phone_number: formData.get('phone_number'),
+    national_id: formData.get('national_id') || null,
+    address: formData.get('address') || null,
+    province: formData.get('province') || null,
+    district: formData.get('district') || null,
+    postal_code: formData.get('postal_code') || null,
+    guarantor_name: formData.get('guarantor_name') || null,
+    guarantor_phone: formData.get('guarantor_phone') || null,
+    notes: formData.get('notes') || null,
+    branch_id: formData.get('branch_id')
+  });
+}
+
+export async function createCustomerAction(
+  locale: string,
+  _prevState: CustomerFormState,
+  formData: FormData
+): Promise<CustomerFormState> {
+  const me = await getCurrentAppUser();
+  if (!me) return { error: 'forbidden' };
+
+  const parsed = parseForm(formData);
+  if (!parsed.success) return { error: 'invalid' };
+
+  if (!isPowerUser(me.role) && parsed.data.branch_id !== me.branch_id) {
+    return { error: 'forbidden' };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from('customers').insert({ ...parsed.data, created_by: me.id });
+  if (error) return { error: error.code === '23505' ? 'nationalIdExists' : 'invalid' };
+
+  revalidatePath(`/${locale}/customers`);
+  return {};
+}
+
+export async function softDeleteCustomerAction(locale: string, customerId: string) {
+  const me = await getCurrentAppUser();
+  if (!me || !isPowerUser(me.role)) throw new Error('Forbidden');
+
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from('contracts')
+    .select('id', { count: 'exact', head: true })
+    .eq('customer_id', customerId)
+    .eq('status', 'active');
+  if (count && count > 0) throw new Error('Cannot delete a customer with an active contract');
+
+  const { error } = await adminClient()
+    .from('customers')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', customerId);
+  if (error) throw error;
+
+  revalidatePath(`/${locale}/customers`);
+}
+
+export async function updateCustomerAction(
+  locale: string,
+  customerId: string,
+  _prevState: CustomerFormState,
+  formData: FormData
+): Promise<CustomerFormState> {
+  const me = await getCurrentAppUser();
+  if (!me) return { error: 'forbidden' };
+
+  const parsed = parseForm(formData);
+  if (!parsed.success) return { error: 'invalid' };
+
+  if (!isPowerUser(me.role) && parsed.data.branch_id !== me.branch_id) {
+    return { error: 'forbidden' };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from('customers').update(parsed.data).eq('id', customerId);
+  if (error) return { error: error.code === '23505' ? 'nationalIdExists' : 'invalid' };
+
+  revalidatePath(`/${locale}/customers`);
+  revalidatePath(`/${locale}/customers/${customerId}`);
+  return {};
+}
