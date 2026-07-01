@@ -32,7 +32,11 @@ export default async function SoldVehiclesPage({
     );
   }
 
-  const { data: rows } = await query;
+  const [{ data: rows }, { data: prefixRows }] = await Promise.all([
+    query,
+    supabase.from('stock_prefixes').select('prefix, label').eq('is_active', true).order('sort_order')
+  ]);
+  const prefixes = (prefixRows ?? []) as { prefix: string; label: string }[];
 
   const cashSales = (rows ?? []).filter((r: any) => r.status === 'sold_cash');
   const closedContracts = (rows ?? []).filter((r: any) => r.status === 'closed_contract');
@@ -49,6 +53,7 @@ export default async function SoldVehiclesPage({
         closedContracts={closedContracts as any}
         currentTab={sp.tab ?? 'cash'}
         currentQuery={sp.q ?? ''}
+        prefixes={prefixes}
         isDeveloper={isPowerUser(me?.role)}
       />
     </div>

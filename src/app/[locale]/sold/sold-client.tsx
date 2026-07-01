@@ -36,6 +36,7 @@ export default function SoldPageClient({
   closedContracts,
   currentTab,
   currentQuery,
+  prefixes,
   isDeveloper
 }: {
   locale: string;
@@ -43,6 +44,7 @@ export default function SoldPageClient({
   closedContracts: SoldRow[];
   currentTab: string;
   currentQuery: string;
+  prefixes: { prefix: string; label: string }[];
   isDeveloper: boolean;
 }) {
   const t = useTranslations('sold');
@@ -53,6 +55,7 @@ export default function SoldPageClient({
   const [, startTransition] = useTransition();
   const [q, setQ] = useState(currentQuery);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [prefixFilter, setPrefixFilter] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -83,8 +86,10 @@ export default function SoldPageClient({
     }
   }
 
-  const rows = currentTab === 'cash' ? cashSales : closedContracts;
+  const allRows = currentTab === 'cash' ? cashSales : closedContracts;
   const stockNum = (c: string | null) => parseInt((c ?? '').replace(/[^0-9]/g, ''), 10) || 0;
+  const prefixOf = (c: string | null) => ((c ?? '').match(/^[A-Za-z]+/)?.[0] ?? '').toUpperCase();
+  const rows = prefixFilter ? allRows.filter((r) => prefixOf(r.stock_code) === prefixFilter) : allRows;
   const sortedRows = [...rows].sort((a, b) =>
     sortDir === 'asc'
       ? stockNum(a.stock_code) - stockNum(b.stock_code)
@@ -111,9 +116,20 @@ export default function SoldPageClient({
         />
       </div>
 
-      {/* Sort by stock code */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-xs text-slate-400">{locale === 'th' ? 'เรียงตามรหัสสต็อก' : 'Sort by stock code'}:</span>
+      {/* Filter + sort by stock code */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <span className="text-xs text-slate-400">{locale === 'th' ? 'กรองรหัสสต็อก' : 'Filter stock code'}:</span>
+        <select
+          value={prefixFilter}
+          onChange={(e) => setPrefixFilter(e.target.value)}
+          className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white"
+        >
+          <option value="">{locale === 'th' ? 'ทั้งหมด' : 'All'}</option>
+          {prefixes.map((p) => (
+            <option key={p.prefix} value={p.prefix.toUpperCase()}>{p.prefix}{p.label ? ` — ${p.label}` : ''}</option>
+          ))}
+        </select>
+        <span className="text-xs text-slate-400 ml-2">{locale === 'th' ? 'เรียงตามรหัสสต็อก' : 'Sort by stock code'}:</span>
         <select
           value={sortDir}
           onChange={(e) => setSortDir(e.target.value as 'asc' | 'desc')}
