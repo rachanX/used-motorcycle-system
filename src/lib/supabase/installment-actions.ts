@@ -367,3 +367,28 @@ export async function recordInstallmentPaymentAction(
   revalidatePath(`/${locale}/installments`);
   return {};
 }
+
+// ─── DELETE A SINGLE UNPAID PAYMENT ROW ──────────────────────────────────────
+export async function deletePaymentRowAction(
+  locale: string,
+  paymentId: string,
+  contractId: string,
+  contractBranchId: string
+): Promise<{ error?: string }> {
+  const me = await getCurrentAppUser();
+  if (!me) return { error: 'forbidden' };
+  if (!isPowerUser(me.role) && contractBranchId !== me.branch_id) return { error: 'forbidden' };
+
+  const admin = adminClient();
+  // Never delete a paid installment — that would destroy a payment record.
+  const { data: pay } = await admin.from('payments').select('status').eq('id', paymentId).single();
+  if (!pay) return { error: 'not_found' };
+  if (pay.status === 'paid') return { error: 'cannot_delete_paid' };
+
+  const { error } = await admin.from('payments').delete().eq('id', paymentId);
+  if (error) return { error: 'invalid' };
+
+  revalidatePath(`/${locale}/payments/${contractId}`);
+  revalidatePath(`/${locale}/installments`);
+  return {};
+}

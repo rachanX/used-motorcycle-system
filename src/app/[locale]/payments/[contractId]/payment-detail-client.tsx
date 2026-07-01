@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CircleDollarSign, Plus, RefreshCw } from 'lucide-react';
+import { CircleDollarSign, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import RecordPaymentModal from '../record-payment-modal';
-import { addPaymentRowAction, generatePaymentScheduleAction, type PaymentRowState } from '@/lib/supabase/installment-actions';
+import { addPaymentRowAction, generatePaymentScheduleAction, deletePaymentRowAction, type PaymentRowState } from '@/lib/supabase/installment-actions';
 import { useActionState, useEffect, useRef } from 'react';
 
 type Payment = {
@@ -65,6 +65,19 @@ export default function PaymentDetailClient({ locale, contract, payments, branch
       }
     } finally {
       setGenerating(false);
+    }
+  }
+
+  async function handleDeleteRow(p: Payment) {
+    const msg = isThai
+      ? `ลบงวดที่ ${p.installment_number}? การดำเนินการนี้ย้อนกลับไม่ได้`
+      : `Delete term #${p.installment_number}? This cannot be undone.`;
+    if (!confirm(msg)) return;
+    const res = await deletePaymentRowAction(locale, p.id, contract.id, contract.branch_id);
+    if (res?.error) {
+      setGenerateMsg(isThai ? `ลบไม่สำเร็จ: ${res.error}` : `Delete failed: ${res.error}`);
+    } else {
+      router.refresh();
     }
   }
 
@@ -242,6 +255,15 @@ export default function PaymentDetailClient({ locale, contract, payments, branch
                           <CircleDollarSign className="h-3.5 w-3.5" />
                           {t('recordPayment')}
                         </button>
+                        {p.status !== 'paid' && (
+                          <button
+                            onClick={() => handleDeleteRow(p)}
+                            className="ml-3 inline-flex items-center gap-1 text-red-500 hover:text-red-600 font-medium whitespace-nowrap"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            {isThai ? 'ลบ' : 'Delete'}
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
