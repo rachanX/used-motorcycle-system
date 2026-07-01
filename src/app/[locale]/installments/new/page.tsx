@@ -17,7 +17,7 @@ export default async function NewContractPage({
 
   let branchQuery = supabase.from('branches').select('id, branch_name').eq('status', 'active').is('deleted_at', null).order('branch_name');
   let customerQuery = supabase.from('customers').select('id, first_name, last_name, phone_number, address, guarantor_name, guarantor_phone').is('deleted_at', null).order('first_name');
-  let vehicleQuery = supabase.from('vehicles').select('id, stock_code, brand, model, engine_number, vin_number, license_plate, color, actual_cost').eq('status', 'available').is('deleted_at', null).order('stock_code');
+  let vehicleQuery = supabase.from('vehicles').select('id, stock_code, brand, model, engine_number, vin_number, license_plate, color, actual_cost, branch_id').eq('status', 'available').is('deleted_at', null).order('stock_code');
 
   if (!isPowerUser(me?.role) && me?.branch_id) {
     vehicleQuery = vehicleQuery.eq('branch_id', me.branch_id);

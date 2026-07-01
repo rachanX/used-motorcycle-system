@@ -7,7 +7,7 @@ import { createInstallmentContractAction, type InstallmentFormState } from '@/li
 
 type Branch = { id: string; branch_name: string };
 type Customer = { id: string; first_name: string; last_name: string; phone_number: string; address: string | null; guarantor_name: string | null; guarantor_phone: string | null };
-type Vehicle = { id: string; stock_code: string; brand: string; model: string; engine_number: string | null; vin_number: string | null; license_plate: string | null; color: string | null; actual_cost: number | null };
+type Vehicle = { id: string; stock_code: string; brand: string; model: string; engine_number: string | null; vin_number: string | null; license_plate: string | null; color: string | null; actual_cost: number | null; branch_id: string | null };
 
 export default function NewContractForm({ locale, branches, customers, vehicles, defaultBranchId }: {
   locale: string;
@@ -26,6 +26,7 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
   const [newCustomer, setNewCustomer] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState<string>(defaultBranchId ?? '');
 
   // Auto-fill vehicle snapshot when vehicle selected
   function onVehicleChange(id: string) {
@@ -38,7 +39,11 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
   }
   // Sequence now derives from the selected motorcycle's stock-code number.
   const stockNum = (code: string) => (code.match(/\d+/)?.[0] ?? '');
-  const noVehicles = locale === 'th' ? 'ไม่พบรถที่พร้อมขาย' : 'No available motorcycles found.';
+  // Only Available motorcycles from the selected branch may be chosen.
+  const branchVehicles = selectedBranch ? vehicles.filter(v => v.branch_id === selectedBranch) : [];
+  const stockMsg = !selectedBranch
+    ? (locale === 'th' ? 'กรุณาเลือกสาขาก่อน' : 'Please select a branch first')
+    : (locale === 'th' ? 'ไม่พบรถที่พร้อมขายในสาขานี้' : 'No available motorcycles found.');
 
   useEffect(() => {
     if (submitCount.current > 0 && !isPending && !state.error && state.contractId) {
@@ -58,11 +63,13 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
       <Section title={`1. ${t('contractInfo')}`}>
         <div className="grid grid-cols-2 gap-3">
           <F label={t('branch')} required>
-            <select name="branch_id" defaultValue={defaultBranchId ?? ''} required
+            <select value={selectedBranch}
+              onChange={e => { setSelectedBranch(e.target.value); setSelectedVehicle(null); }}
               disabled={!!defaultBranchId} className="input">
               <option value="" disabled>—</option>
               {branches.map(b => <option key={b.id} value={b.id}>{b.branch_name}</option>)}
             </select>
+            <input type="hidden" name="branch_id" value={selectedBranch} />
           </F>
           <F label={t('contractDate')} required>
             <input name="contract_date" type="date" defaultValue={new Date().toISOString().slice(0,10)} required className="input" />
@@ -71,8 +78,8 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
             <input name="contract_number" required className="input" />
           </F>
           <F label={locale === 'th' ? 'รหัสสต็อก' : 'Stock Code'} required>
-            {vehicles.length === 0 ? (
-              <p className="text-sm text-amber-600 py-2">{noVehicles}</p>
+            {branchVehicles.length === 0 ? (
+              <p className="text-sm text-amber-600 py-2">{stockMsg}</p>
             ) : (
               <select
                 value={selectedVehicle?.id ?? ''}
@@ -81,7 +88,7 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
                 className="input"
               >
                 <option value="" disabled>—</option>
-                {vehicles.map(v => (
+                {branchVehicles.map(v => (
                   <option key={v.id} value={v.id}>{v.stock_code}</option>
                 ))}
               </select>
@@ -139,12 +146,12 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
       <Section title={`4. ${t('vehicleInfo')}`}>
         <div className="mb-3">
           <F label={locale === 'th' ? 'เลือกรถมอเตอร์ไซค์' : 'Select Motorcycle'} required>
-            {vehicles.length === 0 ? (
-              <p className="text-sm text-amber-600 py-2">{noVehicles}</p>
+            {branchVehicles.length === 0 ? (
+              <p className="text-sm text-amber-600 py-2">{stockMsg}</p>
             ) : (
               <select name="vehicle_id" required className="input" value={selectedVehicle?.id ?? ''} onChange={e => onVehicleChange(e.target.value)}>
                 <option value="" disabled>—</option>
-                {vehicles.map(v => (
+                {branchVehicles.map(v => (
                   <option key={v.id} value={v.id}>{v.stock_code} — {v.brand} {v.model}</option>
                 ))}
               </select>

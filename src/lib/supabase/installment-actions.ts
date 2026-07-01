@@ -60,6 +60,17 @@ export async function createInstallmentContractAction(
   const vehicleId = formData.get('vehicle_id') as string;
   if (!vehicleId) return { error: 'invalid' };
 
+  // Business rule: a motorcycle can only be sold by the branch it's assigned to,
+  // and must still be available.
+  const { data: veh } = await admin
+    .from('vehicles')
+    .select('branch_id, status')
+    .eq('id', vehicleId)
+    .single();
+  if (!veh || veh.branch_id !== branchId || veh.status !== 'available') {
+    return { error: 'vehicleNotInBranch' };
+  }
+
   const finalContractNumber = (formData.get('contract_number') as string | null)?.trim();
   const seq = parseInt(formData.get('contract_sequence') as string || '0', 10);
 
