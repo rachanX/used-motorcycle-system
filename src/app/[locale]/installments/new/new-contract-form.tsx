@@ -36,6 +36,9 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
     const c = customers.find(c => c.id === id) ?? null;
     setSelectedCustomer(c);
   }
+  // Sequence now derives from the selected motorcycle's stock-code number.
+  const stockNum = (code: string) => (code.match(/\d+/)?.[0] ?? '');
+  const noVehicles = locale === 'th' ? 'ไม่พบรถที่พร้อมขาย' : 'No available motorcycles found.';
 
   useEffect(() => {
     if (submitCount.current > 0 && !isPending && !state.error && state.contractId) {
@@ -67,8 +70,23 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
           <F label={t('contractId')} required>
             <input name="contract_number" required className="input" />
           </F>
-          <F label={t('sequence')} required>
-            <input name="contract_sequence" type="number" min={1} required className="input" />
+          <F label={locale === 'th' ? 'รหัสสต็อก' : 'Stock Code'} required>
+            {vehicles.length === 0 ? (
+              <p className="text-sm text-amber-600 py-2">{noVehicles}</p>
+            ) : (
+              <select
+                value={selectedVehicle?.id ?? ''}
+                onChange={e => onVehicleChange(e.target.value)}
+                required
+                className="input"
+              >
+                <option value="" disabled>—</option>
+                {vehicles.map(v => (
+                  <option key={v.id} value={v.id}>{v.stock_code}</option>
+                ))}
+              </select>
+            )}
+            <input type="hidden" name="contract_sequence" value={selectedVehicle ? stockNum(selectedVehicle.stock_code) : ''} />
           </F>
         </div>
       </Section>
@@ -121,15 +139,19 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
       <Section title={`4. ${t('vehicleInfo')}`}>
         <div className="mb-3">
           <F label={locale === 'th' ? 'เลือกรถมอเตอร์ไซค์' : 'Select Motorcycle'} required>
-            <select name="vehicle_id" required className="input" onChange={e => onVehicleChange(e.target.value)} defaultValue="">
-              <option value="" disabled>—</option>
-              {vehicles.map(v => (
-                <option key={v.id} value={v.id}>{v.stock_code} — {v.brand} {v.model}</option>
-              ))}
-            </select>
+            {vehicles.length === 0 ? (
+              <p className="text-sm text-amber-600 py-2">{noVehicles}</p>
+            ) : (
+              <select name="vehicle_id" required className="input" value={selectedVehicle?.id ?? ''} onChange={e => onVehicleChange(e.target.value)}>
+                <option value="" disabled>—</option>
+                {vehicles.map(v => (
+                  <option key={v.id} value={v.id}>{v.stock_code} — {v.brand} {v.model}</option>
+                ))}
+              </select>
+            )}
           </F>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3" key={selectedVehicle?.id ?? 'none'}>
           <F label={t('engineNo')}><input name="vehicle_engine_no" defaultValue={selectedVehicle?.engine_number ?? ''} className="input" /></F>
           <F label={t('chassisNo')}><input name="vehicle_chassis_no" defaultValue={selectedVehicle?.vin_number ?? ''} className="input" /></F>
           <F label={locale === 'th' ? 'รุ่น' : 'Model'}><input name="vehicle_model_snap" defaultValue={selectedVehicle ? `${selectedVehicle.brand} ${selectedVehicle.model}` : ''} className="input" /></F>
