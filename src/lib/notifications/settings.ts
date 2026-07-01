@@ -62,7 +62,14 @@ export async function updateSettings(patch: SettingsUpdate): Promise<{ error?: s
   if (patch.enabled !== undefined) update.enabled = patch.enabled;
   if (patch.destination_type !== undefined) update.destination_type = patch.destination_type;
   if (patch.destination_id !== undefined) update.destination_id = patch.destination_id || null;
-  if (patch.notify_time !== undefined) update.notify_time = patch.notify_time;
+  if (patch.notify_time !== undefined) {
+    update.notify_time = patch.notify_time;
+    // If the admin changed the time, re-arm today's run so the new time can
+    // still fire today (per-contract dedupe still prevents repeat sends).
+    if ((current.notify_time ?? '').slice(0, 5) !== patch.notify_time.slice(0, 5)) {
+      update.last_scheduled_run_date = null;
+    }
+  }
   if (patch.min_overdue_days !== undefined) update.min_overdue_days = patch.min_overdue_days;
   if (patch.language !== undefined) update.language = patch.language;
   // Only touch the token when a non-empty value is supplied, so re-saving the
