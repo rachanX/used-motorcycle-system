@@ -3,8 +3,9 @@
 import { useState, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Search, Trash2, Eye } from 'lucide-react';
+import { Search, Trash2, Eye, Pencil } from 'lucide-react';
 import { softDeleteVehicleAction } from '@/lib/supabase/vehicle-actions';
+import VehicleFormModal from '../vehicles/vehicle-form-modal';
 
 type SoldRow = {
   vehicle_id: string;
@@ -37,6 +38,8 @@ type SoldRow = {
   received_registration_book: boolean | null;
   received_tax_invoice: boolean | null;
   registration_received_date: string | null;
+  branch_id: string | null;
+  stock_prefix: string | null;
 };
 
 export default function SoldPageClient({
@@ -46,6 +49,8 @@ export default function SoldPageClient({
   currentTab,
   currentQuery,
   prefixes,
+  branches,
+  nextByPrefix,
   isDeveloper
 }: {
   locale: string;
@@ -54,6 +59,8 @@ export default function SoldPageClient({
   currentTab: string;
   currentQuery: string;
   prefixes: { prefix: string; label: string }[];
+  branches: { id: string; branch_name: string }[];
+  nextByPrefix?: Record<string, number>;
   isDeveloper: boolean;
 }) {
   const t = useTranslations('sold');
@@ -67,6 +74,7 @@ export default function SoldPageClient({
   const [prefixFilter, setPrefixFilter] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
   const [detailRow, setDetailRow] = useState<SoldRow | null>(null);
+  const [editingRow, setEditingRow] = useState<SoldRow | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function updateParams(next: Record<string, string>) {
@@ -255,10 +263,49 @@ export default function SoldPageClient({
       )}
 
       {detailRow && (
-        <VehicleDetailModal row={detailRow} locale={locale} onClose={() => setDetailRow(null)} />
+        <VehicleDetailModal
+          row={detailRow}
+          locale={locale}
+          onClose={() => setDetailRow(null)}
+          onEdit={isDeveloper ? () => { setEditingRow(detailRow); setDetailRow(null); } : undefined}
+        />
+      )}
+
+      {editingRow && (
+        <VehicleFormModal
+          locale={locale}
+          mode="edit"
+          vehicle={soldRowToVehicle(editingRow)}
+          branches={branches}
+          prefixes={prefixes}
+          nextByPrefix={nextByPrefix}
+          defaultBranchId={null}
+          onClose={() => { setEditingRow(null); router.refresh(); }}
+        />
       )}
     </div>
   );
+}
+
+// Map a sold-view row onto the Vehicle shape the edit form expects.
+function soldRowToVehicle(r: SoldRow): any {
+  return {
+    id: r.vehicle_id,
+    stock_code: r.stock_code,
+    stock_prefix: r.stock_prefix,
+    brand: r.brand, model: r.model, sub_model: r.sub_model,
+    year: r.year, registration_year: r.registration_year,
+    color: r.color, license_plate: r.license_plate,
+    vin_number: r.vin_number, engine_number: r.engine_number,
+    mileage: r.mileage, date_received: r.date_received,
+    previous_owner: r.previous_owner, vehicle_source: r.vehicle_source,
+    purchase_price: r.purchase_price, repair_cost: r.repair_cost,
+    actual_cost: r.actual_cost, selling_price: r.selling_price,
+    branch_id: r.branch_id, status: r.status,
+    received_registration_book: r.received_registration_book,
+    received_tax_invoice: r.received_tax_invoice,
+    registration_received_date: r.registration_received_date,
+  };
 }
 
 function DRow({ label, value, mono }: { label: string; value: string | number | null | undefined; mono?: boolean }) {
@@ -272,7 +319,7 @@ function DRow({ label, value, mono }: { label: string; value: string | number | 
   );
 }
 
-function VehicleDetailModal({ row, locale, onClose }: { row: SoldRow; locale: string; onClose: () => void }) {
+function VehicleDetailModal({ row, locale, onClose, onEdit }: { row: SoldRow; locale: string; onClose: () => void; onEdit?: () => void }) {
   const isThai = locale === 'th';
   const L = (th: string, en: string) => (isThai ? th : en);
   const money = (n: number | null) =>
@@ -330,7 +377,12 @@ function VehicleDetailModal({ row, locale, onClose }: { row: SoldRow; locale: st
           </>
         )}
 
-        <div className="mt-5 flex justify-end">
+        <div className="mt-5 flex justify-end gap-2">
+          {onEdit && (
+            <button onClick={onEdit} className="inline-flex items-center gap-1 px-4 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white">
+              <Pencil className="h-3.5 w-3.5" /> {L('แก้ไข', 'Edit')}
+            </button>
+          )}
           <button onClick={onClose} className="px-4 py-2 text-sm rounded-lg bg-slate-800 dark:bg-slate-700 text-white">
             {L('ปิด', 'Close')}
           </button>
