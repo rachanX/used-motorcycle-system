@@ -72,6 +72,7 @@ export default function SoldPageClient({
   const [q, setQ] = useState(currentQuery);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [prefixFilter, setPrefixFilter] = useState('');
+  const [brandFilter, setBrandFilter] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
   const [detailRow, setDetailRow] = useState<SoldRow | null>(null);
   const [editingRow, setEditingRow] = useState<SoldRow | null>(null);
@@ -107,7 +108,11 @@ export default function SoldPageClient({
   const allRows = currentTab === 'cash' ? cashSales : closedContracts;
   const stockNum = (c: string | null) => parseInt((c ?? '').replace(/[^0-9]/g, ''), 10) || 0;
   const prefixOf = (c: string | null) => ((c ?? '').match(/^[A-Za-z]+/)?.[0] ?? '').toUpperCase();
-  const rows = prefixFilter ? allRows.filter((r) => prefixOf(r.stock_code) === prefixFilter) : allRows;
+  const brandOptions = Array.from(new Set(allRows.map((r) => r.brand).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  const rows = allRows.filter((r) =>
+    (!prefixFilter || prefixOf(r.stock_code) === prefixFilter) &&
+    (!brandFilter || r.brand === brandFilter)
+  );
   const sortedRows = [...rows].sort((a, b) =>
     sortDir === 'asc'
       ? stockNum(a.stock_code) - stockNum(b.stock_code)
@@ -143,6 +148,17 @@ export default function SoldPageClient({
           <option value="">{locale === 'th' ? 'ทั้งหมด' : 'All'}</option>
           {prefixes.map((p) => (
             <option key={p.prefix} value={p.prefix.toUpperCase()}>{p.label && p.label !== p.prefix ? `${p.prefix} — ${p.label}` : p.prefix}</option>
+          ))}
+        </select>
+        <span className="text-xs text-slate-400 ml-2">{locale === 'th' ? 'กรองยี่ห้อ' : 'Filter brand'}:</span>
+        <select
+          value={brandFilter}
+          onChange={(e) => setBrandFilter(e.target.value)}
+          className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white"
+        >
+          <option value="">{locale === 'th' ? 'ทั้งหมด' : 'All'}</option>
+          {brandOptions.map((b) => (
+            <option key={b} value={b}>{b}</option>
           ))}
         </select>
         <span className="text-xs text-slate-400 ml-2">{locale === 'th' ? 'เรียงตามรหัสสต็อก' : 'Sort by stock code'}:</span>
