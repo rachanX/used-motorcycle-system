@@ -232,8 +232,20 @@ function ContractInfoForm({ locale, contract, branches, onClose }: { locale: str
         <F label={locale === 'th' ? 'เลขที่สัญญา' : 'Contract Number'}>
           <input name="contract_number" defaultValue={contract.contract_number ?? ''} className="input" />
         </F>
-        <F label={locale === 'th' ? 'ลำดับ' : 'Sequence'}>
-          <input name="contract_sequence" type="number" min="0" step="1" defaultValue={contract.contract_sequence ?? ''} className="input" />
+        <F label={locale === 'th' ? 'รหัสสต็อก' : 'Stock Code'}>
+          <input
+            value={contract.vehicles?.stock_code ?? '—'}
+            readOnly
+            className="input bg-slate-50 dark:bg-slate-800 text-slate-500 cursor-not-allowed"
+          />
+          <input
+            type="hidden"
+            name="contract_sequence"
+            value={(contract.vehicles?.stock_code ?? '').match(/\d+/)?.[0] ?? (contract.contract_sequence ?? '')}
+          />
+          <p className="text-xs text-slate-400 mt-1">
+            {locale === 'th' ? 'ลำดับอ้างอิงจากเลขรหัสสต็อกโดยอัตโนมัติ' : 'Sequence is taken from the stock-code number automatically.'}
+          </p>
         </F>
       </div>
       {state.error && <p className="text-xs text-red-600">{state.error}</p>}
