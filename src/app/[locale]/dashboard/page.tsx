@@ -5,7 +5,7 @@ import { createClient, getCurrentAppUser } from '@/lib/supabase/server';
 import { adminClient } from '@/lib/supabase/admin';
 import {
   Bike, FileText, AlertTriangle, Wallet, ChevronRight,
-  BadgeCheck, Banknote, TrendingUp, Users, ArrowUpRight,
+  BadgeCheck, Banknote, Users, ArrowUpRight,
   Wrench, CalendarClock, CircleDollarSign, BookMarked
 } from 'lucide-react';
 
@@ -178,9 +178,6 @@ export default async function DashboardPage({
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               {t('totalVehicles')}
             </span>
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950">
-              <Bike className="h-4 w-4 text-blue-600" />
-            </span>
           </div>
           <p className="text-3xl font-bold text-slate-900 dark:text-white">{totals.totalVehicles}</p>
           <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
@@ -194,9 +191,6 @@ export default async function DashboardPage({
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               {t('activeContracts')}
             </span>
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-950">
-              <FileText className="h-4 w-4 text-indigo-600" />
-            </span>
           </div>
           <p className="text-3xl font-bold text-slate-900 dark:text-white">{totals.activeContracts}</p>
           <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -209,9 +203,6 @@ export default async function DashboardPage({
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               {t('outstandingBalance')}
-            </span>
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950">
-              <TrendingUp className="h-4 w-4 text-amber-600" />
             </span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">
@@ -227,9 +218,6 @@ export default async function DashboardPage({
           <div className="flex items-center justify-between">
             <span className={`text-xs font-medium uppercase tracking-wide ${overdueLabelColor}`}>
               {t('overdueCustomers')}
-            </span>
-            <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ${overdueIconBg}`}>
-              <AlertTriangle className={`h-4 w-4 ${overdueIconColor}`} />
             </span>
           </div>
           <p className={`text-3xl font-bold ${overdueNumberColor}`}>{totals.overdueContracts}</p>
@@ -248,9 +236,6 @@ export default async function DashboardPage({
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               {labelCollected}
             </span>
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950">
-              <CircleDollarSign className="h-4 w-4 text-emerald-600" />
-            </span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">{fmtMoney(collectedThisMonth)}</p>
           <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -264,9 +249,6 @@ export default async function DashboardPage({
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">
               {labelDueWeek}
-            </span>
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950">
-              <CalendarClock className="h-4 w-4 text-blue-600" />
             </span>
           </div>
           <p className="text-2xl font-bold text-slate-900 dark:text-white">{fmtMoney(dueNext7Days)}</p>
