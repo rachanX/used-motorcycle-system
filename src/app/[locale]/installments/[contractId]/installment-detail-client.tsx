@@ -221,13 +221,19 @@ function ContractInfoForm({ locale, contract, branches, onClose }: { locale: str
   return (
     <form action={formAction} onSubmit={() => { ref.current += 1; }} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
-        <F label="Branch">
+        <F label={locale === 'th' ? 'สาขา' : 'Branch'}>
           <select name="branch_id" defaultValue={contract.branch_id} className="input">
             {branches.map(b => <option key={b.id} value={b.id}>{b.branch_name}</option>)}
           </select>
         </F>
-        <F label="Contract Date">
+        <F label={locale === 'th' ? 'วันที่ทำสัญญา' : 'Contract Date'}>
           <input name="contract_date" type="date" defaultValue={contract.start_date} className="input" />
+        </F>
+        <F label={locale === 'th' ? 'เลขที่สัญญา' : 'Contract Number'}>
+          <input name="contract_number" defaultValue={contract.contract_number ?? ''} className="input" />
+        </F>
+        <F label={locale === 'th' ? 'ลำดับ' : 'Sequence'}>
+          <input name="contract_sequence" type="number" min="0" step="1" defaultValue={contract.contract_sequence ?? ''} className="input" />
         </F>
       </div>
       {state.error && <p className="text-xs text-red-600">{state.error}</p>}

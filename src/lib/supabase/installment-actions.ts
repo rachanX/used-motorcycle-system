@@ -134,12 +134,28 @@ export async function updateContractInfoAction(
   _prev: SectionFormState, formData: FormData
 ): Promise<SectionFormState> {
   await assertBranchAccess(branchId);
-  const { error } = await adminClient().from('contracts').update({
+
+  const rawNumber = (formData.get('contract_number') as string | null)?.trim() ?? '';
+  const rawSeq = (formData.get('contract_sequence') as string | null)?.trim() ?? '';
+
+  const payload: Record<string, unknown> = {
     branch_id: formData.get('branch_id') as string || branchId,
     start_date: formData.get('contract_date') as string,
-  }).eq('id', contractId);
-  if (error) return { error: 'invalid' };
+  };
+  if (rawNumber) payload.contract_number = rawNumber;
+  if (rawSeq !== '') {
+    const seq = parseInt(rawSeq, 10);
+    if (Number.isNaN(seq) || seq < 0) return { error: 'Sequence must be a whole number' };
+    payload.contract_sequence = seq;
+  }
+
+  const { error } = await adminClient().from('contracts').update(payload as never).eq('id', contractId);
+  if (error) {
+    if (error.code === '23505') return { error: 'Contract number already exists' };
+    return { error: 'invalid' };
+  }
   revalidatePath(`/${locale}/installments/${contractId}`);
+  revalidatePath(`/${locale}/payments/${contractId}`);
   return {};
 }
 
