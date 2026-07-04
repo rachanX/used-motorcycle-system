@@ -55,7 +55,7 @@ export default function InstallmentDetailClient({ locale, contract, branches }: 
             <InfoRow label={t('branch')} value={branches.find(b => b.id === contract.branch_id)?.branch_name} />
             <InfoRow label={t('contractDate')} value={contract.start_date} />
             <InfoRow label={t('contractId')} value={contract.contract_number ?? '—'} />
-            <InfoRow label={t('sequence')} value={contract.contract_sequence?.toString() ?? '—'} />
+            <InfoRow label={t('sequence')} value={contract.vehicles?.stock_code ?? contract.contract_sequence?.toString() ?? '—'} />
           </div>
         }
         editContent={
