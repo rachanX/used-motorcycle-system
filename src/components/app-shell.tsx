@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Bike, Users, FileText, CreditCard,
   Bell, Building2, ShieldCheck, Settings, LogOut,
   Menu, X, Sun, Moon, ChevronDown, ChevronRight,
-  Archive, MessageCircle, Tag
+  Archive, MessageCircle, Tag, Trash2
 } from 'lucide-react';
 import LanguageSwitcher from './language-switcher';
 import NotificationBell from './notification-bell';
@@ -183,6 +183,12 @@ export default function AppShell({
               className={linkClass(isActive(`/${locale}/brands`))}>
               <Tag className="h-4 w-4 shrink-0" />
               <span className="truncate">{locale === 'th' ? 'ยี่ห้อ / รุ่น' : 'Brands & Models'}</span>
+            </Link>
+
+            <Link href={`/${locale}/recycle-bin`} onClick={() => setMobileOpen(false)}
+              className={linkClass(isActive(`/${locale}/recycle-bin`))}>
+              <Trash2 className="h-4 w-4 shrink-0" />
+              <span className="truncate">{locale === 'th' ? 'ถังขยะ' : 'Recycle Bin'}</span>
             </Link>
 
             {isDeveloper && (
