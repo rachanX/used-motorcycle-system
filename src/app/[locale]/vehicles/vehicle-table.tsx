@@ -29,6 +29,17 @@ const STATUS_COLORS: Record<string, string> = {
   under_repair: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
 };
 
+// Distinct badge colors per branch (avoids the status green/red/yellow).
+const BRANCH_COLORS: string[] = [
+  'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+  'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300',
+  'bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300',
+  'bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300',
+  'bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300',
+  'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300',
+];
+const BRANCH_FALLBACK = 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300';
+
 export default function VehicleTable({
   locale,
   vehicles,
@@ -78,6 +89,9 @@ export default function VehicleTable({
   const [deleting, setDeleting] = useState<VehicleWithBranch | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [sellingRow, setSellingRow] = useState<VehicleWithBranch | null>(null);
+
+  const branchColor: Record<string, string> = {};
+  branches.forEach((b, i) => { branchColor[b.id] = BRANCH_COLORS[i % BRANCH_COLORS.length]; });
 
   function updateParams(next: Record<string, string>, resetPage = true) {
     const params = new URLSearchParams(searchParams.toString());
@@ -214,7 +228,15 @@ export default function VehicleTable({
                 <td className="px-4 py-3 text-slate-900 dark:text-white">{fmtMoney(v.purchase_price ?? 0)}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{fmtMoney(v.repair_cost ?? 0)}</td>
                 <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{fmtMoney((v.purchase_price ?? 0) + (v.repair_cost ?? 0))}</td>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{v.branches?.branch_name ?? '—'}</td>
+                <td className="px-4 py-3">
+                  {v.branches?.branch_name ? (
+                    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${(v.branch_id && branchColor[v.branch_id]) || BRANCH_FALLBACK}`}>
+                      {v.branches.branch_name}
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">—</span>
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[v.status]}`}>
                     {t(STATUS_KEYS[v.status])}
