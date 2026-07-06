@@ -195,6 +195,7 @@ export default function VehicleTable({
               <th className="px-4 py-3 font-medium">{t('brand')} / {t('model')}</th>
               <th className="px-4 py-3 font-medium">{t('year')}</th>
               <th className="px-4 py-3 font-medium">{t('licensePlate')}</th>
+              <th className="px-4 py-3 font-medium">{t('color')}</th>
               <th className="px-4 py-3 font-medium">{t('purchasePrice')}</th>
               <th className="px-4 py-3 font-medium">{t('repairCost')}</th>
               <th className="px-4 py-3 font-medium">{t('actualCost')}</th>
@@ -206,7 +207,7 @@ export default function VehicleTable({
           <tbody>
             {vehicles.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-4 py-10 text-center text-slate-400">{t('noVehicles')}</td>
+                <td colSpan={11} className="px-4 py-10 text-center text-slate-400">{t('noVehicles')}</td>
               </tr>
             )}
             {vehicles.map((v) => (
@@ -225,6 +226,7 @@ export default function VehicleTable({
                 </td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{v.year}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{v.license_plate || '—'}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{v.color || '—'}</td>
                 <td className="px-4 py-3 text-slate-900 dark:text-white">{fmtMoney(v.purchase_price ?? 0)}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{fmtMoney(v.repair_cost ?? 0)}</td>
                 <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{fmtMoney((v.purchase_price ?? 0) + (v.repair_cost ?? 0))}</td>
