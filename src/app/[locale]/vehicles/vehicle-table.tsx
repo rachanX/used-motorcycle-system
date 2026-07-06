@@ -21,12 +21,12 @@ const STATUS_KEYS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  available: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
+  available: 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300',
   reserved: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
   financing: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
-  sold_cash: 'bg-slate-100 text-slate-600 dark:bg-slate-800',
+  sold_cash: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300',
   closed_contract: 'bg-slate-200 text-slate-500 dark:bg-slate-800',
-  under_repair: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300'
+  under_repair: 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300'
 };
 
 export default function VehicleTable({
