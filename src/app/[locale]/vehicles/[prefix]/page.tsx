@@ -69,7 +69,7 @@ export default async function VehiclePrefixPage({
   if (sp.branch) query = query.eq('branch_id', sp.branch);
   if (sp.q) {
     const term = sp.q.replace(/[%]/g, '');
-    query = query.or(`stock_code.ilike.%${term}%,brand.ilike.%${term}%,model.ilike.%${term}%,license_plate.ilike.%${term}%`);
+    query = query.or(`stock_code.ilike.%${term}%,brand.ilike.%${term}%,model.ilike.%${term}%,license_plate.ilike.%${term}%,vin_number.ilike.%${term}%,engine_number.ilike.%${term}%`);
   }
 
   const [{ data: vehicles, count }, { data: branches }, { data: allPrefixes }, { data: seqRows }] = await Promise.all([
