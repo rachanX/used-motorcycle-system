@@ -76,10 +76,10 @@ export default async function VehiclePrefixPage({
     query,
     supabase.from('branches').select('id, branch_name').eq('status', 'active').is('deleted_at', null).order('branch_name'),
     supabase.from('stock_prefixes').select('prefix, label').eq('is_active', true).order('sort_order'),
-    supabase.from('stock_sequences').select('prefix, last_seq')
+    supabase.from('v_next_stock_code').select('prefix, next_number')
   ]);
   const nextByPrefix: Record<string, number> = {};
-  for (const r of (seqRows ?? []) as { prefix: string; last_seq: number }[]) nextByPrefix[r.prefix] = (r.last_seq ?? 0) + 1;
+  for (const r of (seqRows ?? []) as { prefix: string; next_number: number }[]) nextByPrefix[r.prefix] = r.next_number ?? 1;
 
   const totalPages = count ? Math.ceil(count / PAGE_SIZE) : 1;
 

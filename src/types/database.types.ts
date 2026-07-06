@@ -320,6 +320,7 @@ export type Database = {
       v_overdue_customers: { Row: OverdueCustomer; Relationships: [] };
       v_contract_payment_summary: { Row: ContractPaymentSummary; Relationships: [] };
       v_sold_vehicles: { Row: SoldVehicle; Relationships: [] };
+      v_next_stock_code: { Row: { prefix: string; next_number: number }; Relationships: [] };
     };
     Functions: {
       get_contract_summary: { Args: { p_contract_id: string }; Returns: ContractSummary[] };

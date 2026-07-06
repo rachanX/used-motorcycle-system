@@ -36,12 +36,12 @@ export default async function SoldVehiclesPage({
     query,
     supabase.from('stock_prefixes').select('prefix, label').eq('is_active', true).order('sort_order'),
     supabase.from('branches').select('id, branch_name').eq('status', 'active').is('deleted_at', null).order('branch_name'),
-    supabase.from('stock_sequences').select('prefix, last_seq')
+    supabase.from('v_next_stock_code').select('prefix, next_number')
   ]);
   const prefixes = (prefixRows ?? []) as { prefix: string; label: string }[];
   const branches = (branchRows ?? []) as { id: string; branch_name: string }[];
   const nextByPrefix: Record<string, number> = {};
-  for (const r of (seqRows ?? []) as { prefix: string; last_seq: number }[]) nextByPrefix[r.prefix] = (r.last_seq ?? 0) + 1;
+  for (const r of (seqRows ?? []) as { prefix: string; next_number: number }[]) nextByPrefix[r.prefix] = r.next_number ?? 1;
 
   const cashSales = (rows ?? []).filter((r: any) => r.status === 'sold_cash');
   const closedContracts = (rows ?? []).filter((r: any) => r.status === 'closed_contract');
