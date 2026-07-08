@@ -34,6 +34,17 @@ export default async function BranchesPage({
 
   const { data: branches, error } = await query;
 
+  // Sold (cash) vehicle count per branch, for the branch cards.
+  const { data: soldRows } = await supabase
+    .from('vehicles')
+    .select('branch_id')
+    .eq('status', 'sold_cash')
+    .is('deleted_at', null);
+  const soldByBranch: Record<string, number> = {};
+  for (const r of (soldRows ?? []) as { branch_id: string | null }[]) {
+    if (r.branch_id) soldByBranch[r.branch_id] = (soldByBranch[r.branch_id] ?? 0) + 1;
+  }
+
   return (
     <div>
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
@@ -46,6 +57,7 @@ export default async function BranchesPage({
       <BranchTable
         locale={locale}
         branches={(branches ?? []) as any}
+        soldByBranch={soldByBranch}
         isDeveloper={isPowerUser(me?.role)}
         currentQuery={q ?? ''}
         currentStatus={status ?? ''}

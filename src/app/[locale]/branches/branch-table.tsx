@@ -14,12 +14,14 @@ type BranchWithCount = Branch & { vehicles: { count: number }[] };
 export default function BranchTable({
   locale,
   branches,
+  soldByBranch,
   isDeveloper,
   currentQuery,
   currentStatus
 }: {
   locale: string;
   branches: BranchWithCount[];
+  soldByBranch: Record<string, number>;
   isDeveloper: boolean;
   currentQuery: string;
   currentStatus: string;
@@ -114,9 +116,14 @@ export default function BranchTable({
             {b.phone_number && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{b.phone_number}</p>}
 
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <span className="text-xs text-slate-400">
-                {t('vehicleCount')}: {b.vehicles?.[0]?.count ?? 0}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400">
+                  {t('vehicleCount')}: {b.vehicles?.[0]?.count ?? 0}
+                </span>
+                <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300">
+                  {locale === 'th' ? 'ขายสด' : 'Sold'}: {soldByBranch[b.id] ?? 0}
+                </span>
+              </div>
               {isDeveloper && (
                 <div className="flex items-center gap-3">
                   <button

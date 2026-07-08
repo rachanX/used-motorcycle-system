@@ -77,14 +77,13 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
           <F label={t('contractId')} required>
             <input name="contract_number" required className="input" />
           </F>
-          <F label={locale === 'th' ? 'รหัสสต็อก' : 'Stock Code'} required>
+          <F label={locale === 'th' ? 'รหัสสต็อก' : 'Stock Code'}>
             <select
               value={selectedVehicle?.id ?? ''}
               onChange={e => onVehicleChange(e.target.value)}
-              required
               className="input"
             >
-              <option value="" disabled>—</option>
+              <option value="">—</option>
               {branchVehicles.map(v => (
                 <option key={v.id} value={v.id}>{v.stock_code}</option>
               ))}

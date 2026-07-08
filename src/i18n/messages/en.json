@@ -159,7 +159,7 @@
     "allSuppliers": "All Suppliers",
     "statusAvailable": "Available",
     "statusReserved": "Reserved",
-    "statusFinancing": "Financing",
+    "statusFinancing": "Finance",
     "statusSoldCash": "Sold",
     "statusClosedContract": "Closed Contract",
     "allStatus": "All Statuses",

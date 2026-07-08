@@ -266,8 +266,9 @@ export default function VehicleFormModal({
                   >
                     <option value="available">{t('statusAvailable')}</option>
                     <option value="sold_cash">{t('statusSoldCash')}</option>
+                    <option value="financing">{t('statusFinancing')}</option>
                     <option value="under_repair">{t('statusUnderRepair')}</option>
-                    {!['available', 'sold_cash', 'under_repair'].includes(status) && (
+                    {!['available', 'sold_cash', 'financing', 'under_repair'].includes(status) && (
                       <option value={status}>{status}</option>
                     )}
                   </select>
@@ -307,8 +308,8 @@ export default function VehicleFormModal({
                   </div>
                 </F>
               </div>
-              {/* Selling Price — shown only when status is Cash Sold */}
-              {status === 'sold_cash' && (
+              {/* Selling Price — shown for Sold and Finance */}
+              {(status === 'sold_cash' || status === 'financing') && (
                 <F label={t('sellingPrice')} required>
                   <input
                     name="selling_price"

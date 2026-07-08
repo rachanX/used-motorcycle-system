@@ -228,7 +228,15 @@ export default function VehicleTable({
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{v.license_plate || '—'}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{v.color || '—'}</td>
                 <td className="px-4 py-3 text-slate-900 dark:text-white">{fmtMoney(v.purchase_price ?? 0)}</td>
-                <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{fmtMoney(v.repair_cost ?? 0)}</td>
+                <td className="px-4 py-3">
+                  {(v.repair_cost ?? 0) === 0 ? (
+                    <span className="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300">
+                      {fmtMoney(0)}
+                    </span>
+                  ) : (
+                    <span className="text-slate-600 dark:text-slate-300">{fmtMoney(v.repair_cost ?? 0)}</span>
+                  )}
+                </td>
                 <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{fmtMoney((v.purchase_price ?? 0) + (v.repair_cost ?? 0))}</td>
                 <td className="px-4 py-3">
                   {v.branches?.branch_name ? (
