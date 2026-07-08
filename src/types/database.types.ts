@@ -141,6 +141,7 @@ export type Contract = {
   vehicle_new_plate: string | null;
   vehicle_color_snap: string | null;
   vehicle_model_snap: string | null;
+  vehicle_cost_snap: number | null;
 };
 
 export type Payment = {

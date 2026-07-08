@@ -134,7 +134,7 @@ export default function InstallmentDetailClient({ locale, contract, branches }: 
         setEditing={setEditing}
         viewContent={
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-1.5">
-            {ve?.actual_cost != null && <InfoRow label={isThai ? 'ต้นทุน' : 'Cost'} value={fmtMoney(ve.actual_cost)} />}
+            {(ve?.actual_cost ?? contract.vehicle_cost_snap) != null && <InfoRow label={isThai ? 'ต้นทุน' : 'Cost'} value={fmtMoney(ve?.actual_cost ?? contract.vehicle_cost_snap)} />}
             <InfoRow label={t('salePrice')} value={fmtMoney(contract.sale_price)} />
             <InfoRow label={t('interestRate')} value={contract.interest_rate != null ? `${contract.interest_rate}%` : '—'} />
             <InfoRow label={t('totalFinancingWithInterest')} value={fmtMoney(contract.total_financing)} />

@@ -116,6 +116,7 @@ export async function createInstallmentContractAction(
     vehicle_new_plate: formData.get('vehicle_new_plate') as string || null,
     vehicle_color_snap: formData.get('vehicle_color_snap') as string || null,
     vehicle_model_snap: formData.get('vehicle_model_snap') as string || null,
+    vehicle_cost_snap: Number(formData.get('vehicle_cost_snap')) || null,
   }).select('id').single();
 
   if (error) return { error: 'invalid' };

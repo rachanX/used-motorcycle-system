@@ -160,7 +160,7 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
         <div className="grid grid-cols-2 gap-3" key={selectedVehicle?.id ?? 'none'}>
           <F label={t('engineNo')}><input name="vehicle_engine_no" defaultValue={selectedVehicle?.engine_number ?? ''} className="input" /></F>
           <F label={t('chassisNo')}><input name="vehicle_chassis_no" defaultValue={selectedVehicle?.vin_number ?? ''} className="input" /></F>
-          <F label={locale === 'th' ? 'รุ่น' : 'Model'}><input name="vehicle_model_snap" defaultValue={selectedVehicle ? `${selectedVehicle.brand} ${selectedVehicle.model}` : ''} className="input" /></F>
+          <F label={locale === 'th' ? 'ยี่ห้อ / รุ่น' : 'Brand / Model'}><input name="vehicle_model_snap" placeholder={locale === 'th' ? 'เช่น Honda Wave 125' : 'e.g. Honda Wave 125'} defaultValue={selectedVehicle ? `${selectedVehicle.brand} ${selectedVehicle.model}` : ''} className="input" /></F>
           <F label={t('oldPlate')}><input name="vehicle_old_plate" className="input" /></F>
           <F label={t('newPlate')}><input name="vehicle_new_plate" defaultValue={selectedVehicle?.license_plate ?? ''} className="input" /></F>
           <F label={locale === 'th' ? 'สี' : 'Color'}><input name="vehicle_color_snap" defaultValue={selectedVehicle?.color ?? ''} className="input" /></F>
@@ -170,11 +170,15 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
       {/* ── Section 5: Financial Info ────────────────── */}
       <Section title={`5. ${t('financialInfo')}`}>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {/* Cost — always shown; populated from vehicle when selected */}
+          {/* Cost — auto from stock vehicle, or typed manually when none selected */}
           <F label={locale === 'th' ? 'ต้นทุน (Cost)' : 'Cost'}>
-            <div className="input bg-slate-50 dark:bg-slate-800 text-slate-500 select-none">
-              {selectedVehicle?.actual_cost != null ? fmtMoney(selectedVehicle.actual_cost) : '—'}
-            </div>
+            {selectedVehicle ? (
+              <div className="input bg-slate-50 dark:bg-slate-800 text-slate-500 select-none">
+                {selectedVehicle.actual_cost != null ? fmtMoney(selectedVehicle.actual_cost) : '—'}
+              </div>
+            ) : (
+              <input name="vehicle_cost_snap" type="number" step="0.01" min={0} className="input" />
+            )}
           </F>
           <F label={t('salePrice')}><input name="sale_price" type="number" step="0.01" min={0} className="input" /></F>
           <F label={t('interestRate')}><input name="interest_rate" type="number" step="0.01" min={0} className="input" /></F>
