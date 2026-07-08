@@ -43,7 +43,7 @@ export default async function SoldVehiclesPage({
   const nextByPrefix: Record<string, number> = {};
   for (const r of (seqRows ?? []) as { prefix: string; next_number: number }[]) nextByPrefix[r.prefix] = r.next_number ?? 1;
 
-  const cashSales = (rows ?? []).filter((r: any) => r.status === 'sold_cash');
+  const cashSales = (rows ?? []).filter((r: any) => r.status === 'sold_cash' || r.status === 'financing');
   const closedContracts = (rows ?? []).filter((r: any) => r.status === 'closed_contract');
 
   return (

@@ -343,7 +343,9 @@ function VehicleDetailModal({ row, locale, onClose, onEdit }: { row: SoldRow; lo
   const money = (n: number | null) =>
     n == null ? '—' : Number(n).toLocaleString(isThai ? 'th-TH' : 'en-US', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 });
   const sourceLabel: Record<string, string> = { buy: L('ซื้อ', 'Buy'), trade_in: L('เทิร์น', 'Trade-in'), auction: L('ประมูล', 'Auction'), other: L('อื่นๆ', 'Other') };
-  const statusLabel = row.status === 'sold_cash' ? L('ขายแล้ว', 'Sold') : L('ปิดสัญญาแล้ว', 'Closed Contract');
+  const statusLabel = row.status === 'sold_cash' ? L('ขายสด', 'Sold')
+    : row.status === 'financing' ? L('ไฟแนนซ์', 'Finance')
+    : L('ปิดสัญญาแล้ว', 'Closed Contract');
   const yesNo = (b: boolean | null) => b == null ? null : (b ? L('ได้รับ', 'Yes') : L('ยังไม่ได้รับ', 'No'));
   const custName = (row.first_name || row.last_name) ? `${row.first_name ?? ''} ${row.last_name ?? ''}`.trim() : null;
 
