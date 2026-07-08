@@ -143,16 +143,18 @@ export default function NewContractForm({ locale, branches, customers, vehicles,
       {/* ── Section 4: Motorcycle Info ───────────────── */}
       <Section title={`4. ${t('vehicleInfo')}`}>
         <div className="mb-3">
-          <F label={locale === 'th' ? 'เลือกรถมอเตอร์ไซค์' : 'Select Motorcycle'} required>
-            <select name="vehicle_id" required className="input" value={selectedVehicle?.id ?? ''} onChange={e => onVehicleChange(e.target.value)}>
-              <option value="" disabled>—</option>
+          <F label={locale === 'th' ? 'เลือกรถมอเตอร์ไซค์ (ไม่บังคับ)' : 'Select Motorcycle (optional)'}>
+            <select name="vehicle_id" className="input" value={selectedVehicle?.id ?? ''} onChange={e => onVehicleChange(e.target.value)}>
+              <option value="">{locale === 'th' ? '— ไม่เลือก / กรอกข้อมูลเอง —' : '— None / fill in manually —'}</option>
               {branchVehicles.map(v => (
                 <option key={v.id} value={v.id}>{v.stock_code} — {v.brand} {v.model}</option>
               ))}
             </select>
-            {branchVehicles.length === 0 && (
-              <p className="text-xs text-amber-600 mt-1">{stockMsg}</p>
-            )}
+            <p className="text-xs text-slate-400 mt-1">
+              {locale === 'th'
+                ? 'เลือกจากสต็อกเพื่อกรอกข้อมูลรถอัตโนมัติ หรือเว้นว่างแล้วกรอกข้อมูลด้านล่างเอง'
+                : 'Pick from stock to auto-fill vehicle details, or leave blank and enter them below yourself.'}
+            </p>
           </F>
         </div>
         <div className="grid grid-cols-2 gap-3" key={selectedVehicle?.id ?? 'none'}>

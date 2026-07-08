@@ -105,7 +105,7 @@ export type Contract = {
   id: string;
   contract_number: string;
   customer_id: string;
-  vehicle_id: string;
+  vehicle_id: string | null;
   branch_id: string;
   sale_price: number;
   down_payment: number;

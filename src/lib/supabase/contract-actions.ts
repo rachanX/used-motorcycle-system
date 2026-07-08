@@ -167,7 +167,7 @@ export async function updateContractAction(
 
   // If the contract was manually cancelled from the edit form, free up
   // the vehicle the same way cancelContractAction does.
-  if (parsed.data.status === 'cancelled') {
+  if (parsed.data.status === 'cancelled' && contract.vehicle_id) {
     await supabase.from('vehicles').update({ status: 'available' }).eq('id', contract.vehicle_id);
   }
 
@@ -229,11 +229,13 @@ export async function cancelContractAction(locale: string, contractId: string) {
     .eq('id', contractId);
   if (contractError) throw contractError;
 
-  const { error: vehicleError } = await admin
-    .from('vehicles')
-    .update({ status: 'available' })
-    .eq('id', contract.vehicle_id).eq('status', 'financing');
-  if (vehicleError) throw vehicleError;
+  if (contract.vehicle_id) {
+    const { error: vehicleError } = await admin
+      .from('vehicles')
+      .update({ status: 'available' })
+      .eq('id', contract.vehicle_id).eq('status', 'financing');
+    if (vehicleError) throw vehicleError;
+  }
 
   revalidatePath(`/${locale}/installments`);
   revalidatePath(`/${locale}/payments`);

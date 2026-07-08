@@ -57,25 +57,25 @@ export async function createInstallmentContractAction(
     customerId = newCust.id;
   }
 
-  const vehicleId = formData.get('vehicle_id') as string;
-  if (!vehicleId) return { error: 'invalid' };
-
-  // Business rule: a motorcycle can only be sold by the branch it's assigned to,
-  // and must still be available.
-  const { data: veh } = await admin
-    .from('vehicles')
-    .select('branch_id, status')
-    .eq('id', vehicleId)
-    .single();
-  if (!veh || veh.branch_id !== branchId || veh.status !== 'available') {
-    return { error: 'vehicleNotInBranch' };
+  // Vehicle is optional: you can sell a bike that isn't in stock and type its
+  // details manually. If a stock motorcycle IS selected, enforce the branch rule.
+  const vehicleId = ((formData.get('vehicle_id') as string) || '').trim() || null;
+  if (vehicleId) {
+    const { data: veh } = await admin
+      .from('vehicles')
+      .select('branch_id, status')
+      .eq('id', vehicleId)
+      .single();
+    if (!veh || veh.branch_id !== branchId || veh.status !== 'available') {
+      return { error: 'vehicleNotInBranch' };
+    }
   }
 
   const finalContractNumber = (formData.get('contract_number') as string | null)?.trim();
-  const seq = parseInt(formData.get('contract_sequence') as string || '0', 10);
+  const seqRaw = parseInt(formData.get('contract_sequence') as string || '0', 10);
+  const seq = Number.isNaN(seqRaw) ? 0 : seqRaw;
 
   if (!finalContractNumber) return { error: 'invalid' };
-  if (!seq || seq < 1) return { error: 'invalid' };
 
   const salePrice = Number(formData.get('sale_price') || 0);
   const downPayment = Number(formData.get('down_payment') || 0);
@@ -85,7 +85,7 @@ export async function createInstallmentContractAction(
 
   const { data: contract, error } = await admin.from('contracts').insert({
     contract_number: finalContractNumber,
-    contract_sequence: seq,
+    contract_sequence: seq || null,
     customer_id: customerId,
     vehicle_id: vehicleId,
     branch_id: branchId,
@@ -120,7 +120,9 @@ export async function createInstallmentContractAction(
 
   if (error) return { error: 'invalid' };
 
-  await admin.from('vehicles').update({ status: 'financing' }).eq('id', vehicleId);
+  if (vehicleId) {
+    await admin.from('vehicles').update({ status: 'financing' }).eq('id', vehicleId);
+  }
 
   revalidatePath(`/${locale}/installments`);
   return { contractId: contract.id };
