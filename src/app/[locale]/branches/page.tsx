@@ -45,6 +45,16 @@ export default async function BranchesPage({
     if (r.branch_id) soldByBranch[r.branch_id] = (soldByBranch[r.branch_id] ?? 0) + 1;
   }
 
+  const { data: financeRows } = await supabase
+    .from('vehicles')
+    .select('branch_id')
+    .eq('status', 'financing')
+    .is('deleted_at', null);
+  const financeByBranch: Record<string, number> = {};
+  for (const r of (financeRows ?? []) as { branch_id: string | null }[]) {
+    if (r.branch_id) financeByBranch[r.branch_id] = (financeByBranch[r.branch_id] ?? 0) + 1;
+  }
+
   return (
     <div>
       <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
@@ -58,6 +68,7 @@ export default async function BranchesPage({
         locale={locale}
         branches={(branches ?? []) as any}
         soldByBranch={soldByBranch}
+        financeByBranch={financeByBranch}
         isDeveloper={isPowerUser(me?.role)}
         currentQuery={q ?? ''}
         currentStatus={status ?? ''}

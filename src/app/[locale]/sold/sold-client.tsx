@@ -7,6 +7,12 @@ import { Search, Trash2, Eye, Pencil } from 'lucide-react';
 import { softDeleteVehicleAction } from '@/lib/supabase/vehicle-actions';
 import VehicleFormModal from '../vehicles/vehicle-form-modal';
 
+const SOLD_STATUS_COLOR: Record<string, string> = {
+  sold_cash: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300',
+  financing: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
+  closed_contract: 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+};
+
 type SoldRow = {
   vehicle_id: string;
   stock_code: string;
@@ -118,7 +124,7 @@ export default function SoldPageClient({
       ? stockNum(a.stock_code) - stockNum(b.stock_code)
       : stockNum(b.stock_code) - stockNum(a.stock_code)
   );
-  const colSpan = currentTab === 'cash' ? 9 : 11;
+  const colSpan = currentTab === 'cash' ? 10 : 12;
 
   return (
     <div>
@@ -201,6 +207,7 @@ export default function SoldPageClient({
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800 text-left text-slate-500 dark:text-slate-400">
               <th className="px-4 py-3 font-medium">{locale === 'th' ? 'รหัสสต็อก' : 'Stock Code'}</th>
+              <th className="px-4 py-3 font-medium">{locale === 'th' ? 'สถานะ' : 'Status'}</th>
               <th className="px-4 py-3 font-medium">{locale === 'th' ? 'ยี่ห้อ' : 'Brand'}</th>
               <th className="px-4 py-3 font-medium">{locale === 'th' ? 'รุ่น' : 'Model'}</th>
               <th className="px-4 py-3 font-medium">{locale === 'th' ? 'ปี' : 'Year'}</th>
@@ -231,6 +238,13 @@ export default function SoldPageClient({
             {sortedRows.map((r) => (
               <tr key={r.vehicle_id} className="border-b last:border-0 border-slate-100 dark:border-slate-800">
                 <td className="px-4 py-3 font-mono text-xs text-slate-500">{r.stock_code}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${SOLD_STATUS_COLOR[r.status] ?? 'bg-slate-100 text-slate-600 dark:bg-slate-800'}`}>
+                    {r.status === 'sold_cash' ? (locale === 'th' ? 'ขายสด' : 'Sold')
+                      : r.status === 'financing' ? (locale === 'th' ? 'ไฟแนนซ์' : 'Finance')
+                      : (locale === 'th' ? 'ปิดสัญญาแล้ว' : 'Closed')}
+                  </span>
+                </td>
                 <td className="px-4 py-3 text-slate-900 dark:text-white">{r.brand}</td>
                 <td className="px-4 py-3 text-slate-900 dark:text-white">{r.model}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{r.year}</td>
