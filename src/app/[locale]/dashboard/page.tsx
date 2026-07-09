@@ -58,6 +58,16 @@ export default async function DashboardPage({
     .gte('due_date', today)
     .lte('due_date', in7);
 
+  // Finance (on-installment) vehicle count.
+  let financeSoldQuery = admin
+    .from('vehicles')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'financing')
+    .is('deleted_at', null);
+  if (!isPowerUser(user?.role) && user?.branch_id) {
+    financeSoldQuery = financeSoldQuery.eq('branch_id', user.branch_id);
+  }
+
   if (!isPowerUser(user?.role) && user?.branch_id) {
     // filter by branch via contracts join not possible here directly;
     // we fetch all and the RLS-based supabase client handles it if needed
@@ -67,12 +77,14 @@ export default async function DashboardPage({
     { data: rows },
     { data: overdueCustomers },
     { data: collectedRows },
-    { data: upcomingRows }
+    { data: upcomingRows },
+    { count: financeSoldCount }
   ] = await Promise.all([
     summaryQuery,
     overdueQuery,
     collectedQuery,
-    upcomingQuery
+    upcomingQuery,
+    financeSoldQuery
   ]);
 
   const branches = rows ?? [];
@@ -94,6 +106,7 @@ export default async function DashboardPage({
   );
 
   const collectedThisMonth = (collectedRows ?? []).reduce((s, r) => s + Number(r.amount_paid ?? 0), 0);
+  const financeSold = financeSoldCount ?? 0;
   const dueNext7Days = (upcomingRows ?? []).reduce((s, r) => s + Number(r.amount_due ?? 0) - Number(r.amount_paid ?? 0), 0);
   const dueNext7Count = (upcomingRows ?? []).length;
 
@@ -262,7 +275,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Inventory status row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex items-center gap-3">
           <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950">
             <Bike className="h-4 w-4 text-emerald-600" />
@@ -288,6 +301,15 @@ export default async function DashboardPage({
           <div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">{t('cashSoldVehicles')}</p>
             <p className="text-xl font-bold text-slate-900 dark:text-white">{totals.cashSoldVehicles}</p>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex items-center gap-3">
+          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950">
+            <Banknote className="h-4 w-4 text-indigo-600" />
+          </span>
+          <div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">{isThai ? 'ขายไฟเเนนซ์' : 'Finance'}</p>
+            <p className="text-xl font-bold text-slate-900 dark:text-white">{financeSold}</p>
           </div>
         </div>
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex items-center gap-3">

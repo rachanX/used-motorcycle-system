@@ -126,7 +126,7 @@ export default function BranchTable({
                   {locale === 'th' ? 'ขายสด' : 'Sold'}: {soldByBranch[b.id] ?? 0}
                 </span>
                 <span className="inline-flex rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                  {locale === 'th' ? 'ไฟแนนซ์' : 'Finance'}: {financeByBranch[b.id] ?? 0}
+                  {locale === 'th' ? 'ขายไฟเเนนซ์' : 'Finance'}: {financeByBranch[b.id] ?? 0}
                 </span>
               </div>
               {isDeveloper && (
