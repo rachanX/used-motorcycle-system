@@ -46,6 +46,7 @@ type SoldRow = {
   registration_received_date: string | null;
   branch_id: string | null;
   stock_prefix: string | null;
+  created_at: string | null;
 };
 
 export default function SoldPageClient({
@@ -76,7 +77,7 @@ export default function SoldPageClient({
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
   const [q, setQ] = useState(currentQuery);
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [sortMode, setSortMode] = useState<'stock_asc' | 'stock_desc' | 'date_desc' | 'date_asc'>('date_desc');
   const [prefixFilter, setPrefixFilter] = useState('');
   const [brandFilter, setBrandFilter] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -119,11 +120,15 @@ export default function SoldPageClient({
     (!prefixFilter || prefixOf(r.stock_code) === prefixFilter) &&
     (!brandFilter || r.brand === brandFilter)
   );
-  const sortedRows = [...rows].sort((a, b) =>
-    sortDir === 'asc'
-      ? stockNum(a.stock_code) - stockNum(b.stock_code)
-      : stockNum(b.stock_code) - stockNum(a.stock_code)
-  );
+  const dateVal = (r: SoldRow) => (r.created_at ? new Date(r.created_at).getTime() : 0);
+  const sortedRows = [...rows].sort((a, b) => {
+    switch (sortMode) {
+      case 'stock_desc': return stockNum(b.stock_code) - stockNum(a.stock_code);
+      case 'date_desc': return dateVal(b) - dateVal(a);
+      case 'date_asc': return dateVal(a) - dateVal(b);
+      default: return stockNum(a.stock_code) - stockNum(b.stock_code);
+    }
+  });
   const colSpan = currentTab === 'cash' ? 10 : 12;
 
   return (
@@ -167,14 +172,16 @@ export default function SoldPageClient({
             <option key={b} value={b}>{b}</option>
           ))}
         </select>
-        <span className="text-xs text-slate-400 ml-2">{locale === 'th' ? 'เรียงตามรหัสสต็อก' : 'Sort by stock code'}:</span>
+        <span className="text-xs text-slate-400 ml-2">{locale === 'th' ? 'เรียงลำดับ' : 'Sort by'}:</span>
         <select
-          value={sortDir}
-          onChange={(e) => setSortDir(e.target.value as 'asc' | 'desc')}
+          value={sortMode}
+          onChange={(e) => setSortMode(e.target.value as 'stock_asc' | 'stock_desc' | 'date_desc' | 'date_asc')}
           className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm text-slate-900 dark:text-white"
         >
-          <option value="asc">{locale === 'th' ? 'น้อย → มาก' : 'Min → Max'}</option>
-          <option value="desc">{locale === 'th' ? 'มาก → น้อย' : 'Max → Min'}</option>
+          <option value="date_desc">{locale === 'th' ? 'ล่าสุด' : 'Latest'}</option>
+          <option value="date_asc">{locale === 'th' ? 'เก่าสุด' : 'Oldest'}</option>
+          <option value="stock_asc">{locale === 'th' ? 'รหัสสต็อก: น้อย → มาก' : 'Stock: Min → Max'}</option>
+          <option value="stock_desc">{locale === 'th' ? 'รหัสสต็อก: มาก → น้อย' : 'Stock: Max → Min'}</option>
         </select>
       </div>
 
