@@ -47,6 +47,7 @@ type SoldRow = {
   branch_id: string | null;
   stock_prefix: string | null;
   created_at: string | null;
+  updated_at: string | null;
 };
 
 export default function SoldPageClient({
@@ -120,7 +121,7 @@ export default function SoldPageClient({
     (!prefixFilter || prefixOf(r.stock_code) === prefixFilter) &&
     (!brandFilter || r.brand === brandFilter)
   );
-  const dateVal = (r: SoldRow) => (r.created_at ? new Date(r.created_at).getTime() : 0);
+  const dateVal = (r: SoldRow) => new Date(r.updated_at ?? r.created_at ?? 0).getTime();
   const sortedRows = [...rows].sort((a, b) => {
     switch (sortMode) {
       case 'stock_desc': return stockNum(b.stock_code) - stockNum(a.stock_code);
