@@ -184,6 +184,7 @@
     "saveSuccess": "บันทึกข้อมูลรถยนต์เรียบร้อยแล้ว",
     "forbidden": "คุณไม่มีสิทธิ์เพิ่ม/แก้ไขรถยนต์ของสาขานี้",
     "repairCost": "ค่าซ่อม",
+    "otherCost": "ค่าอื่นๆ",
     "statusUnderRepair": "ระหว่างซ่อม",
     "receivedRegistrationBook": "รับเล่มทะเบียนแล้ว",
     "receivedTaxInvoice": "รับใบกำกับแล้ว",

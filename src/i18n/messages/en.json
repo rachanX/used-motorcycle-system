@@ -184,6 +184,7 @@
     "saveSuccess": "Vehicle saved successfully",
     "forbidden": "You don't have permission to add/edit vehicles for this branch",
     "repairCost": "Repair Cost",
+    "otherCost": "Other Cost",
     "statusUnderRepair": "Under Repair",
     "receivedRegistrationBook": "Registration Book Received",
     "receivedTaxInvoice": "Tax Invoice Received",

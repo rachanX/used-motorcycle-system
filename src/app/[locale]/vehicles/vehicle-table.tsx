@@ -198,6 +198,7 @@ export default function VehicleTable({
               <th className="px-4 py-3 font-medium">{t('color')}</th>
               <th className="px-4 py-3 font-medium">{t('purchasePrice')}</th>
               <th className="px-4 py-3 font-medium">{t('repairCost')}</th>
+              <th className="px-4 py-3 font-medium">{t('otherCost')}</th>
               <th className="px-4 py-3 font-medium">{t('actualCost')}</th>
               <th className="px-4 py-3 font-medium">{t('branch')}</th>
               <th className="px-4 py-3 font-medium">{t('status')}</th>
@@ -207,7 +208,7 @@ export default function VehicleTable({
           <tbody>
             {vehicles.length === 0 && (
               <tr>
-                <td colSpan={11} className="px-4 py-10 text-center text-slate-400">{t('noVehicles')}</td>
+                <td colSpan={12} className="px-4 py-10 text-center text-slate-400">{t('noVehicles')}</td>
               </tr>
             )}
             {vehicles.map((v) => (
@@ -237,6 +238,7 @@ export default function VehicleTable({
                     <span className="text-slate-600 dark:text-slate-300">{fmtMoney(v.repair_cost ?? 0)}</span>
                   )}
                 </td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{fmtMoney(v.other_cost ?? 0)}</td>
                 <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{fmtMoney((v.purchase_price ?? 0) + (v.repair_cost ?? 0) + (v.other_cost ?? 0))}</td>
                 <td className="px-4 py-3">
                   {v.branches?.branch_name ? (
