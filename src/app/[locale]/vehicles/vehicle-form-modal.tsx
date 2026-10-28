@@ -79,11 +79,12 @@ export default function VehicleFormModal({
     if (!stillValid) setModel('');
   }
 
-  // Live actual_cost = purchase_price + repair_cost
+  // Live actual_cost = purchase_price + repair_cost + other_cost
   const [purchasePrice, setPurchasePrice] = useState(vehicle?.purchase_price ?? 0);
   const [repairCost, setRepairCost] = useState(vehicle?.repair_cost ?? 0);
+  const [otherCost, setOtherCost] = useState(vehicle?.other_cost ?? 0);
   const [sellingPrice, setSellingPrice] = useState(vehicle?.selling_price ?? 0);
-  const actualCost = Number(purchasePrice) + Number(repairCost);
+  const actualCost = Number(purchasePrice) + Number(repairCost) + Number(otherCost);
 
   useEffect(() => {
     if (submitCount.current > 0 && !isPending && !state.error) {
@@ -278,7 +279,7 @@ export default function VehicleFormModal({
 
             {/* ── Costing ─────────────────────────────────────────────── */}
             <Section label={locale === 'th' ? 'ราคาต้นทุน / Cost' : 'Costing'}>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <F label={t('purchasePrice')} required>
                   <input
                     name="purchase_price"
@@ -299,6 +300,17 @@ export default function VehicleFormModal({
                     min={0}
                     value={repairCost}
                     onChange={e => setRepairCost(Number(e.target.value))}
+                    className="input"
+                  />
+                </F>
+                <F label={locale === 'th' ? 'ค่าอื่นๆ' : 'Other Cost'}>
+                  <input
+                    name="other_cost"
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    value={otherCost}
+                    onChange={e => setOtherCost(Number(e.target.value))}
                     className="input"
                   />
                 </F>

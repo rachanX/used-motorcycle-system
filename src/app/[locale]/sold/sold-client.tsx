@@ -24,6 +24,7 @@ type SoldRow = {
   vin_number: string | null;
   purchase_price: number | null;
   repair_cost: number | null;
+  other_cost: number | null;
   actual_cost: number | null;
   color: string | null;
   selling_price: number | null;
@@ -339,7 +340,7 @@ function soldRowToVehicle(r: SoldRow): any {
     vin_number: r.vin_number, engine_number: r.engine_number,
     mileage: r.mileage, date_received: r.date_received,
     previous_owner: r.previous_owner, vehicle_source: r.vehicle_source,
-    purchase_price: r.purchase_price, repair_cost: r.repair_cost,
+    purchase_price: r.purchase_price, repair_cost: r.repair_cost, other_cost: r.other_cost ?? 0,
     actual_cost: r.actual_cost, selling_price: r.selling_price,
     branch_id: r.branch_id, status: r.status,
     received_registration_book: r.received_registration_book,
@@ -399,6 +400,7 @@ function VehicleDetailModal({ row, locale, onClose, onEdit }: { row: SoldRow; lo
           <DRow label={L('แหล่งที่มา', 'Source')} value={row.vehicle_source ? (sourceLabel[row.vehicle_source] ?? row.vehicle_source) : null} />
           <DRow label={L('ต้นทุนซื้อ', 'Purchase Price')} value={money(row.purchase_price)} />
           <DRow label={L('ค่าซ่อม', 'Repair Cost')} value={money(row.repair_cost)} />
+          <DRow label={L('ค่าอื่นๆ', 'Other Cost')} value={money(row.other_cost)} />
           <DRow label={L('ต้นทุนจริง', 'Actual Cost')} value={money(row.actual_cost)} />
           <DRow label={L('ราคาขาย', 'Selling Price')} value={money(row.selling_price ?? row.sale_price)} />
           <DRow label={L('เล่มทะเบียน', 'Reg. Book')} value={yesNo(row.received_registration_book)} />

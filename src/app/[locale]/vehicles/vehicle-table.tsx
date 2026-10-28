@@ -237,7 +237,7 @@ export default function VehicleTable({
                     <span className="text-slate-600 dark:text-slate-300">{fmtMoney(v.repair_cost ?? 0)}</span>
                   )}
                 </td>
-                <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{fmtMoney((v.purchase_price ?? 0) + (v.repair_cost ?? 0))}</td>
+                <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{fmtMoney((v.purchase_price ?? 0) + (v.repair_cost ?? 0) + (v.other_cost ?? 0))}</td>
                 <td className="px-4 py-3">
                   {v.branches?.branch_name ? (
                     <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${(v.branch_id && branchColor[v.branch_id]) || BRANCH_FALLBACK}`}>

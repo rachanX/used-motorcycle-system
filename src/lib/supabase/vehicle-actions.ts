@@ -23,6 +23,7 @@ const vehicleSchema = z.object({
   vehicle_source: z.enum(['buy', 'trade_in', 'auction', 'other']).optional().nullable(),
   purchase_price: z.coerce.number().min(0),
   repair_cost: z.coerce.number().min(0).default(0),
+  other_cost: z.coerce.number().min(0).default(0),
   // selling_price removed from form; kept in DB for historical contract data
   branch_id: z.string().uuid().optional().nullable(),
   status: z.enum(['available', 'reserved', 'financing', 'sold_cash', 'closed_contract', 'under_repair']),
@@ -52,6 +53,7 @@ function parseForm(formData: FormData) {
     vehicle_source: formData.get('vehicle_source') || null,
     purchase_price: formData.get('purchase_price'),
     repair_cost: formData.get('repair_cost') || 0,
+    other_cost: formData.get('other_cost') || 0,
     branch_id: formData.get('branch_id') || null,
     status: formData.get('status'),
     received_registration_book: formData.get('received_registration_book') === 'on',
@@ -112,6 +114,7 @@ export async function createVehicleAction(
     vehicle_source: d.vehicle_source,
     purchase_price: d.purchase_price,
     repair_cost: d.repair_cost,
+    other_cost: d.other_cost,
     selling_price: d.selling_price ?? 0, // set from form when sold_cash, else 0
     branch_id: d.branch_id,
     status: d.status,
@@ -167,6 +170,7 @@ export async function updateVehicleAction(
     vehicle_source: d.vehicle_source,
     purchase_price: d.purchase_price,
     repair_cost: d.repair_cost,
+    other_cost: d.other_cost,
     branch_id: d.branch_id,
     status: d.status,
     received_registration_book: d.received_registration_book,

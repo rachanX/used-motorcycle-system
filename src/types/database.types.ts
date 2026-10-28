@@ -70,6 +70,7 @@ export type Vehicle = {
   updated_at: string;
   deleted_at: string | null;
   repair_cost: number;
+  other_cost: number;
   actual_cost: number | null;
   received_registration_book: boolean;
   received_tax_invoice: boolean;
